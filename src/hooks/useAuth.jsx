@@ -1,43 +1,55 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import { useState, createContext, useContext, useEffect } from 'react';
+import axios from 'axios';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
+  // Kiểm tra xem đã có token trong máy chưa khi vừa load trang
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      // In a real app, you might decode the JWT or fetch user profile here
-      setUser({ token, role: 'admin' }); 
-    }
-    setLoading(false);
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) setUser(JSON.parse(savedUser));
   }, []);
 
-  const login = async (credentials) => {
+  const register = async (data) => {
     try {
-      const response = await api.post('/auth/login', credentials);
-      localStorage.setItem('token', response.data.token);
-      setUser({ token: response.data.token, ...response.data.user });
-      navigate('/dashboard');
+      await axios.post('http://localhost:5000/api/register', data);
     } catch (error) {
       throw error;
     }
   };
 
+
+  const login = async (credentials) => {
+    try {
+      // Gọi đến API Node.js (Port 5000)
+      const response = await axios.post('http://localhost:5000/api/login', credentials);
+      
+      const { token, user: userData } = response.data;
+
+      // Lưu vào LocalStorage
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      // Cập nhật State
+      setUser(userData);
+      
+      return response.data;
+    } catch (error) {
+      throw error; 
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setUser(null);
-    navigate('/login');
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
-      {!loading && children}
+    <AuthContext.Provider value={{ user, login, logout }}>
+      {children}
     </AuthContext.Provider>
   );
 };

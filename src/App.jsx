@@ -7,7 +7,8 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Rooms from './pages/Rooms';
 import Bookings from './pages/Bookings';
-import Customers from './pages/Customers'; // Assume similar to Bookings
+import Customers from './pages/Customers';
+import Register from "./pages/Register";
 
 function App() {
   return (
@@ -15,7 +16,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
-          
+          <Route path="/register" element={<Register />} />
           <Route path="/" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />

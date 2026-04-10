@@ -1,21 +1,34 @@
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { BedDouble } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
   const { login } = useAuth();
+  const navigate = useNavigate(); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) return setError('All fields are required');
-    
+
     setLoading(true);
     try {
-      await login({ email, password });
+      const res = await login({ email, password });
+
+      const user = res.user; 
+
+      
+      if (user.role === 'admin') {
+        navigate('/dashboard');
+      } else {
+        navigate('/home'); 
+      }
+
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
     } finally {
@@ -30,8 +43,8 @@ const Login = () => {
           <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-4">
             <BedDouble size={28} />
           </div>
-          <h1 className="text-2xl font-bold text-slate-800">Welcome Back</h1>
-          <p className="text-slate-500 mt-2">Sign in to manage your hotel</p>
+          <h1 className="text-2xl font-bold text-slate-800">Xin Chào</h1>
+          <p className="text-slate-500 mt-2">Đăng nhập </p>
         </div>
 
         {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">{error}</div>}
@@ -47,7 +60,7 @@ const Login = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Mật Khẩu</label>
             <input
               type="password"
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
@@ -62,9 +75,13 @@ const Login = () => {
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
+          <div className="text-center text-sm text-slate-500 mt-4">
+            Chưa có tài khoản? <a href="/register" className="text-blue-600 hover:underline">Đăng ký</a>
+          </div>
         </form>
       </div>
     </div>
   );
 };
+
 export default Login;
