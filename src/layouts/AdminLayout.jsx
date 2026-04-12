@@ -9,10 +9,12 @@ const AdminLayout = () => {
   const location = useLocation();
 
   const navItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
-    { name: 'Rooms', path: '/rooms', icon: <BedDouble size={20} /> },
-    { name: 'Bookings', path: '/bookings', icon: <CalendarCheck size={20} /> },
-    { name: 'Customers', path: '/customers', icon: <Users size={20} /> },
+    { name: 'Dashboard', path: '/admin/dashboard', icon: <LayoutDashboard size={20} /> },
+    { name: 'Users', path: '/admin/users', icon: <Users size={20} /> },
+    { name: 'Rooms', path: '/admin/rooms', icon: <BedDouble size={20} /> },
+    { name: 'RoomsType', path: '/admin/room-types', icon: <BedDouble size={20} /> },
+    { name: 'Bookings', path: '/admin/bookings', icon: <CalendarCheck size={20} /> },
+    { name: 'Customers', path: '/admin/customers', icon: <Users size={20} /> },
   ];
 
   return (

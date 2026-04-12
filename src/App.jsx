@@ -9,6 +9,9 @@ import Rooms from './pages/Rooms';
 import Bookings from './pages/Bookings';
 import Customers from './pages/Customers';
 import Register from "./pages/Register";
+import Home from "./pages/Home";
+import RoomTypes from "./pages/Room-types";
+import Users from "./pages/Users";
 
 function App() {
   return (
@@ -17,9 +20,13 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+          <Route path="/" element={<Home />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="users" element={<Users />} />
+            <Route path="room-types" element={<RoomTypes />} />
             <Route path="rooms" element={<Rooms />} />
             <Route path="bookings" element={<Bookings />} />
             <Route path="customers" element={<Customers />} />

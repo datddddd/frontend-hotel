@@ -3,42 +3,27 @@ import axios from 'axios';
 
 const AuthContext = createContext(null);
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-
-  // Kiểm tra xem đã có token trong máy chưa khi vừa load trang
-  useEffect(() => {
+// Đừng dùng 'export' ở đây
+const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
-    if (savedUser) setUser(JSON.parse(savedUser));
-  }, []);
-
-  const register = async (data) => {
     try {
-      await axios.post('http://localhost:5000/api/register', data);
-    } catch (error) {
-      throw error;
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (e) {
+      return null;
     }
-  };
+  });
 
 
   const login = async (credentials) => {
     try {
-      // Gọi đến API Node.js (Port 5000)
       const response = await axios.post('http://localhost:5000/api/login', credentials);
-      
       const { token, user: userData } = response.data;
-
-      // Lưu vào LocalStorage
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(userData));
-
-      // Cập nhật State
       setUser(userData);
-      
       return response.data;
-    } catch (error) {
-      throw error; 
-    }
+    } catch (error) { throw error; }
   };
 
   const logout = () => {
@@ -47,11 +32,19 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const register = async (data) => {
+    await axios.post('http://localhost:5000/api/register', data);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+// Đừng dùng 'export' ở đây
+const useAuth = () => useContext(AuthContext);
+
+// Export tập trung ở cuối file
+export { AuthProvider, useAuth };
