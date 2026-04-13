@@ -1,147 +1,301 @@
-import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2 } from 'lucide-react';
-import api from '../services/api';
-import Modal from '../components/Modal';
+import { useEffect, useState } from "react";
+import axios from "axios";
+import {
+  Edit,
+  Trash2,
+  Plus,
+  ChevronLeft,
+  ChevronRight
+} from "lucide-react";
 
 const Rooms = () => {
   const [rooms, setRooms] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [isModalOpen, setModalOpen] = useState(false);
-  const [currentRoom, setCurrentRoom] = useState({ number: '', type: 'Standard', price: '', status: 'Available' });
-  const [isEditing, setIsEditing] = useState(false);
+  const [roomTypes, setRoomTypes] = useState([]);
 
-  // Fetch Rooms
-  const fetchRooms = async () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 6;
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+
+  const [formData, setFormData] = useState({
+    room_number: "",
+    room_type_id: "",
+    status: "available"
+  });
+
+  // ================= FETCH ROOMS =================
+  const fetchRooms = async (page = 1) => {
     try {
-      // const res = await api.get('/rooms');
-      // setRooms(res.data);
-      
-      // MOCK DATA for display purposes
-      setRooms([
-        { id: 1, number: '101', type: 'Deluxe', price: 150, status: 'Available' },
-        { id: 2, number: '102', type: 'Suite', price: 250, status: 'Occupied' },
-      ]);
-    } catch (error) {
-      console.error("Failed to fetch rooms");
-    } finally {
-      setLoading(false);
+      const res = await axios.get(
+        `http://localhost:5000/api/rooms?page=${page}&limit=${limit}`
+      );
+      setRooms(res.data.data);
+      setTotalPages(res.data.pagination.totalPages);
+    } catch (err) {
+      console.error("Lỗi fetch rooms:", err);
     }
   };
 
-  useEffect(() => { fetchRooms(); }, []);
+  // ================= FETCH ROOM TYPES =================
+  const fetchRoomTypes = async () => {
+    try {
+      const res = await axios.get("http://localhost:5000/api/room-types");
+      setRoomTypes(res.data);
+    } catch (err) {
+      console.error("Lỗi fetch room types:", err);
+    }
+  };
 
+  useEffect(() => {
+    fetchRooms(currentPage);
+  }, [currentPage]);
+
+  useEffect(() => {
+    fetchRoomTypes();
+  }, []);
+
+  // ================= OPEN MODAL =================
+  const openModal = (room = null) => {
+    if (room) {
+      setEditingId(room.id);
+      setFormData({
+        room_number: room.room_number,
+        room_type_id: room.room_type_id,
+        status: room.status || "available"
+      });
+    } else {
+      setEditingId(null);
+      setFormData({
+        room_number: "",
+        room_type_id: "",
+        status: "available"
+      });
+    }
+    setIsModalOpen(true);
+  };
+
+  // ================= SUBMIT =================
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (isEditing) {
-        // await api.put(`/rooms/${currentRoom.id}`, currentRoom);
-        setRooms(rooms.map(r => r.id === currentRoom.id ? currentRoom : r)); // Mock update
+      if (editingId) {
+        await axios.put(
+          `http://localhost:5000/api/rooms/${editingId}`,
+          formData
+        );
       } else {
-        // await api.post('/rooms', currentRoom);
-        setRooms([...rooms, { ...currentRoom, id: Date.now() }]); // Mock create
+        await axios.post(
+          "http://localhost:5000/api/rooms",
+          formData
+        );
+        setCurrentPage(1); // về trang đầu
       }
-      setModalOpen(false);
-    } catch (error) {
-      console.error("Failed to save room");
+
+      setIsModalOpen(false);
+      fetchRooms(currentPage);
+    } catch (err) {
+      alert(err.response?.data?.message || err.message);
     }
   };
 
+  // ================= DELETE =================
   const handleDelete = async (id) => {
-    if(window.confirm('Are you sure?')) {
-      try {
-        // await api.delete(`/rooms/${id}`);
-        setRooms(rooms.filter(r => r.id !== id)); // Mock delete
-      } catch (error) {
-        console.error("Failed to delete room");
+    if (!window.confirm("Bạn có chắc muốn xóa phòng này?")) return;
+
+    try {
+      await axios.delete(`http://localhost:5000/api/rooms/${id}`);
+
+      if (rooms.length === 1 && currentPage > 1) {
+        setCurrentPage(prev => prev - 1);
+      } else {
+        fetchRooms(currentPage);
       }
+    } catch (err) {
+      alert("Không thể xóa");
     }
   };
 
-  const openEditModal = (room) => {
-    setCurrentRoom(room);
-    setIsEditing(true);
-    setModalOpen(true);
-  };
+  // ================= PAGINATION =================
+  const getPages = () => {
+    let start = Math.max(1, currentPage - 2);
+    let end = Math.min(totalPages, currentPage + 2);
+    let pages = [];
 
-  const openAddModal = () => {
-    setCurrentRoom({ number: '', type: 'Standard', price: '', status: 'Available' });
-    setIsEditing(false);
-    setModalOpen(true);
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
   };
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">Rooms Management</h1>
-        <button onClick={openAddModal} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
-          <Plus size={20} /> Add Room
+    <div className="p-8 bg-gray-50 min-h-screen">
+
+      {/* HEADER */}
+      <div className="flex justify-between mb-6">
+        <h1 className="text-2xl font-bold">
+          Quản lý phòng ({currentPage}/{totalPages})
+        </h1>
+
+        <button
+          onClick={() => openModal()}
+          className="bg-indigo-600 text-white px-4 py-2 rounded flex gap-2 items-center"
+        >
+          <Plus size={18}/> Thêm phòng
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50 border-b border-slate-200">
-            <tr>
-              <th className="px-6 py-4 text-sm font-semibold text-slate-600">Room Number</th>
-              <th className="px-6 py-4 text-sm font-semibold text-slate-600">Type</th>
-              <th className="px-6 py-4 text-sm font-semibold text-slate-600">Price</th>
-              <th className="px-6 py-4 text-sm font-semibold text-slate-600">Status</th>
-              <th className="px-6 py-4 text-sm font-semibold text-slate-600 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {rooms.map((room) => (
-              <tr key={room.id} className="hover:bg-slate-50 transition-colors">
-                <td className="px-6 py-4 text-slate-800 font-medium">{room.number}</td>
-                <td className="px-6 py-4 text-slate-600">{room.type}</td>
-                <td className="px-6 py-4 text-slate-600">${room.price}/night</td>
-                <td className="px-6 py-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    room.status === 'Available' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                  }`}>
-                    {room.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 flex justify-end gap-3">
-                  <button onClick={() => openEditModal(room)} className="text-blue-600 hover:text-blue-800"><Edit size={18} /></button>
-                  <button onClick={() => handleDelete(room.id)} className="text-red-600 hover:text-red-800"><Trash2 size={18} /></button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* LIST */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {rooms.map(r => (
+          <div key={r.id} className="bg-white p-4 rounded shadow">
+            <h3 className="font-bold text-lg">
+              Phòng {r.room_number}
+            </h3>
+
+            <p className="text-sm text-gray-600">
+              Loại: {r.room_name}
+            </p>
+
+            {/* STATUS */}
+            <span className={`inline-block mt-2 px-2 py-1 rounded text-xs ${
+              r.status === "available"
+                ? "bg-green-100 text-green-700"
+                : r.status === "occupied"
+                ? "bg-red-100 text-red-700"
+                : "bg-yellow-100 text-yellow-700"
+            }`}>
+              {r.status}
+            </span>
+
+            {/* ACTION */}
+            <div className="flex gap-2 mt-4">
+              <button onClick={() => openModal(r)}>
+                <Edit size={16}/>
+              </button>
+              <button onClick={() => handleDelete(r.id)}>
+                <Trash2 size={16}/>
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)} title={isEditing ? 'Edit Room' : 'Add New Room'}>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Room Number</label>
-            <input required type="text" className="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" value={currentRoom.number} onChange={e => setCurrentRoom({...currentRoom, number: e.target.value})} />
+      {/* PAGINATION */}
+      <div className="flex justify-center mt-8 gap-2">
+
+        <button
+          disabled={currentPage === 1}
+          onClick={() => setCurrentPage(prev => prev - 1)}
+        >
+          <ChevronLeft/>
+        </button>
+
+        {getPages().map(p => (
+          <button
+            key={p}
+            onClick={() => setCurrentPage(p)}
+            className={`px-3 py-1 rounded ${
+              currentPage === p
+                ? "bg-indigo-600 text-white"
+                : "bg-white border"
+            }`}
+          >
+            {p}
+          </button>
+        ))}
+
+        <button
+          disabled={currentPage === totalPages}
+          onClick={() => setCurrentPage(prev => prev + 1)}
+        >
+          <ChevronRight/>
+        </button>
+      </div>
+
+      {/* MODAL */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex justify-center items-center bg-black/30">
+          <div className="bg-white p-6 rounded w-96">
+
+            <h2 className="mb-4 font-bold text-lg">
+              {editingId ? "Sửa phòng" : "Thêm phòng"}
+            </h2>
+
+            <form onSubmit={handleSubmit} className="space-y-3">
+
+              <input
+                className="w-full border p-2 rounded"
+                placeholder="Số phòng"
+                value={formData.room_number}
+                onChange={e =>
+                  setFormData({
+                    ...formData,
+                    room_number: e.target.value
+                  })
+                }
+                required
+              />
+
+              <select
+                className="w-full border p-2 rounded"
+                value={formData.room_type_id}
+                onChange={e =>
+                  setFormData({
+                    ...formData,
+                    room_type_id: e.target.value
+                  })
+                }
+                required
+              >
+                <option value="">Chọn loại phòng</option>
+                {roomTypes.map(rt => (
+                  <option key={rt.id} value={rt.id}>
+                    {rt.room_name}
+                  </option>
+                ))}
+              </select>
+
+              {/* STATUS */}
+              <select
+                className="w-full border p-2 rounded"
+                value={formData.status}
+                onChange={e =>
+                  setFormData({
+                    ...formData,
+                    status: e.target.value
+                  })
+                }
+              >
+                <option value="available">Available (Sẵn sàng)</option>
+                <option value="maintenance">Maintenance (Bảo trì)</option>
+              </select>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Hủy
+                </button>
+
+                <button
+                  type="submit"
+                  className="bg-indigo-600 text-white px-4 py-2 rounded"
+                >
+                  Lưu
+                </button>
+              </div>
+
+            </form>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Type</label>
-            <select className="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" value={currentRoom.type} onChange={e => setCurrentRoom({...currentRoom, type: e.target.value})}>
-              <option>Standard</option>
-              <option>Deluxe</option>
-              <option>Suite</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Price per Night ($)</label>
-            <input required type="number" className="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" value={currentRoom.price} onChange={e => setCurrentRoom({...currentRoom, price: e.target.value})} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
-            <select className="w-full px-4 py-2 border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" value={currentRoom.status} onChange={e => setCurrentRoom({...currentRoom, status: e.target.value})}>
-              <option>Available</option>
-              <option>Occupied</option>
-              <option>Maintenance</option>
-            </select>
-          </div>
-          <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-lg mt-4">{isEditing ? 'Update Room' : 'Save Room'}</button>
-        </form>
-      </Modal>
+        </div>
+      )}
+
     </div>
   );
 };
+
 export default Rooms;

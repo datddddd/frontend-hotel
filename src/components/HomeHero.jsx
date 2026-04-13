@@ -1,5 +1,8 @@
+import { useNavigate } from "react-router-dom"; // Import hook này
 
 const Hero = () => {
+  const navigate = useNavigate(); // Khởi tạo hàm điều hướng
+
   return (
     <div 
       className="relative h-screen w-full flex items-center justify-center bg-gray-900"
@@ -9,7 +12,7 @@ const Hero = () => {
         backgroundPosition: "center" 
       }}
     >
-      {/* Overlay: Lớp phủ đen mờ giúp chữ dễ đọc và sang hơn */}
+      {/* Overlay */}
       <div className="absolute inset-0 bg-black/40"></div>
 
       {/* Nội dung chính */}
@@ -23,16 +26,21 @@ const Hero = () => {
         </p>
 
         <div className="flex flex-col md:flex-row gap-4 justify-center">
-          <button className="bg-white text-black hover:bg-transparent hover:text-white border-2 border-white transition-all duration-300 px-8 py-3 font-bold uppercase tracking-wider">
+          {/* Sửa button này */}
+          <button 
+            onClick={() => navigate("/booking")} 
+            className="bg-white text-black hover:bg-transparent hover:text-white border-2 border-white transition-all duration-300 px-8 py-3 font-bold uppercase tracking-wider"
+          >
             Book Now
           </button>
+          
           <button className="bg-transparent text-white border-2 border-white hover:bg-white hover:text-black transition-all duration-300 px-8 py-3 font-bold uppercase tracking-wider">
             View Gallery
           </button>
         </div>
       </div>
 
-      {/* Trang trí thêm: Hiệu ứng cuộn xuống */}
+      {/* Hiệu ứng cuộn xuống */}
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
         <div className="w-[1px] h-12 bg-white/50 mx-auto"></div>
       </div>
