@@ -58,17 +58,6 @@ const UserModal = ({ isOpen, onClose, onSubmit, formData, setFormData, isEditing
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1">Vai trò</label>
-              <select
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
-                value={formData.role_user}
-                onChange={(e) => setFormData({ ...formData, role_user: e.target.value })}
-              >
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-            <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1">Trạng thái</label>
               <select
                 className="w-full border border-slate-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"

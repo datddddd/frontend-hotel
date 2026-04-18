@@ -1,5 +1,5 @@
-import { useState, createContext, useContext, useEffect } from 'react';
-import axios from 'axios';
+import { useState, createContext, useContext } from 'react';
+import api from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -16,14 +16,12 @@ const AuthProvider = ({ children }) => {
 
 
   const login = async (credentials) => {
-    try {
-      const response = await axios.post('http://localhost:5000/api/login', credentials);
-      const { token, user: userData } = response.data;
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
-      return response.data;
-    } catch (error) { throw error; }
+    const response = await api.post('/login', credentials);
+    const { token, user: userData } = response.data;
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+    return response.data;
   };
 
   const logout = () => {
@@ -33,7 +31,7 @@ const AuthProvider = ({ children }) => {
   };
 
   const register = async (data) => {
-    await axios.post('http://localhost:5000/api/register', data);
+    await api.post('/register', data);
   };
 
   return (

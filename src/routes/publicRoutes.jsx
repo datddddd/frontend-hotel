@@ -3,6 +3,7 @@ import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import BookingPage from "../pages/BookingPage";
+import SearchResults from "../pages/SearchResults";
 
 const publicRoutes = [
   { path: "/", element: <Home /> },
@@ -10,6 +11,7 @@ const publicRoutes = [
   { path: "/login", element: <Login /> },
   { path: "/booking", element: <BookingPage /> },
   { path: "/register", element: <Register /> },
+  { path: "/search", element: <SearchResults /> },
 ];
 
 export default publicRoutes;

@@ -22,21 +22,24 @@ const AdminLayout = () => {
       {/* Sidebar */}
       <aside className={`bg-white border-r border-slate-200 transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-20'} flex flex-col`}>
         <div className="h-16 flex items-center justify-center border-b border-slate-200 px-4">
-          <div className="font-bold text-xl text-blue-600 flex items-center gap-2">
+          {/* Bọc Link quanh phần Logo */}
+          <Link
+            to="/home"
+            className="font-bold text-xl text-blue-600 flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
             <BedDouble size={24} />
-            {isSidebarOpen && <span>LuxeStay</span>}
-          </div>
+            {isSidebarOpen && <h1 className="text-xl font-bold">LuxeStay</h1>}
+          </Link>
         </div>
         <nav className="flex-1 p-4 space-y-2">
           {navItems.map((item) => (
             <Link
               key={item.name}
               to={item.path}
-              className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${
-                location.pathname === item.path 
-                  ? 'bg-blue-50 text-blue-600' 
+              className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${location.pathname === item.path
+                  ? 'bg-blue-50 text-blue-600'
                   : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-              }`}
+                }`}
             >
               {item.icon}
               {isSidebarOpen && <span className="font-medium">{item.name}</span>}
@@ -60,9 +63,9 @@ const AdminLayout = () => {
           </button>
           <div className="flex items-center gap-4">
             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-              A
+              {(user?.name || user?.email || 'A').charAt(0).toUpperCase()}
             </div>
-            <span className="font-medium text-slate-700">Admin User</span>
+            <span className="font-medium text-slate-700">{user?.name || user?.email || 'Admin'}</span>
           </div>
         </header>
 

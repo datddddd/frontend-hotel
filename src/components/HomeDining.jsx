@@ -30,12 +30,9 @@ const Services = () => {
               Our Services
             </h2>
             <h3 className="text-4xl md:text-5xl font-serif leading-tight">
-              Nâng tầm trải nghiệm <br /> nghỉ dưỡng của bạn
+              Nâng cao trải nghiệm <br /> nghỉ dưỡng của bạn
             </h3>
           </div>
-          <button className="hidden md:block border-b-2 border-black pb-2 font-bold uppercase text-sm hover:text-gold-600 hover:border-gold-600 transition-all">
-            Xem tất cả dịch vụ
-          </button>
         </div>
 
         {/* Services Grid */}

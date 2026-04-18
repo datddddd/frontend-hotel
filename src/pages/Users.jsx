@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
-// Thêm KeyRound vào đây
-import { Edit, Trash2, Plus, KeyRound } from "lucide-react"; 
+import { Edit, Trash2, Plus, KeyRound, ChevronLeft, ChevronRight } from "lucide-react";
 import UserModal from "../components/UserModal";
 
 const Customers = () => {
@@ -12,13 +11,32 @@ const Customers = () => {
         user_name: "", email: "", password: "", role_user: "user", status_user: "active"
     });
 
-    const fetchCustomers = async () => {
-        const res = await axios.get("http://localhost:5000/api/users");
-        setCustomers(res.data);
-    };
+    // State cho phân trang
+    const [pagination, setPagination] = useState({
+        currentPage: 1,
+        totalPages: 1
+    });
+    const limit = 6;
 
-    useEffect(() => { fetchCustomers(); }, []);
+    // Hàm lấy dữ liệu (sử dụng useCallback để tránh tạo lại hàm không cần thiết)
+    const fetchCustomers = useCallback(async (page = 1) => {
+        try {
+            const res = await axios.get(`http://localhost:5000/api/users?page=${page}&limit=${limit}`);
+            setCustomers(res.data.data);
+            setPagination({
+                currentPage: res.data.pagination.currentPage,
+                totalPages: res.data.pagination.totalPages
+            });
+        } catch (err) {
+            console.error("Lỗi khi tải danh sách:", err);
+        }
+    }, []);
 
+    useEffect(() => {
+        fetchCustomers(1);
+    }, [fetchCustomers]);
+
+    // Các hàm xử lý giữ nguyên logic của bạn
     const handleOpenAdd = () => {
         setEditingId(null);
         setFormData({ user_name: "", email: "", password: "", role_user: "user", status_user: "active" });
@@ -32,11 +50,25 @@ const Customers = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm("Bạn có chắc chắn muốn xóa người dùng này không?")) {
+        if (window.confirm("Bạn có chắc chắn muốn xóa?")) {
             try {
                 await axios.delete(`http://localhost:5000/api/users/${id}`);
-                setCustomers(customers.filter((user) => user.id !== id));
+                // Load lại trang hiện tại sau khi xóa
+                fetchCustomers(pagination.currentPage);
                 alert("Đã xóa thành công!");
+            } catch (err) {
+                alert("Không thể xóa người dùng này.");
+            }
+        }
+    };
+
+    const handleDeleteTrue = async (id) => {
+        if (window.confirm("Bạn có chắc chắn muốn xóa vĩnh viễn?")) {
+            try {
+                await axios.delete(`http://localhost:5000/api/users/${id}/force`);
+                // Load lại trang hiện tại sau khi xóa
+                fetchCustomers(pagination.currentPage);
+                alert("Đã xóa vĩnh viễn!");
             } catch (err) {
                 alert("Không thể xóa người dùng này.");
             }
@@ -52,7 +84,7 @@ const Customers = () => {
                 await axios.post("http://localhost:5000/api/users", formData);
             }
             setIsModalOpen(false);
-            fetchCustomers();
+            fetchCustomers(pagination.currentPage);
         } catch (err) {
             alert("Lỗi: " + err.response?.data?.message);
         }
@@ -60,16 +92,12 @@ const Customers = () => {
 
     const handleResetPassword = async (user) => {
         const randomPassword = Math.random().toString(36).slice(-8);
-        const confirmReset = window.confirm(
-            `Bạn muốn cấp mật khẩu mới cho [${user.user_name}]?\nMật khẩu mới sẽ là: ${randomPassword}`
-        );
-
-        if (confirmReset) {
+        if (window.confirm(`Cấp mật khẩu mới cho [${user.user_name}]: ${randomPassword}`)) {
             try {
                 await axios.put(`http://localhost:5000/api/users/${user.id}/reset-password`, {
                     newPassword: randomPassword
                 });
-                alert(`Thành công! Hãy gửi mật khẩu này cho người dùng: ${randomPassword}`);
+                alert(`Thành công! Mật khẩu mới là: ${randomPassword}`);
             } catch (err) {
                 alert("Lỗi khi đặt lại mật khẩu!");
             }
@@ -77,68 +105,73 @@ const Customers = () => {
     };
 
     return (
-        <div className="p-8">
+        <div className="p-8 max-w-6xl mx-auto">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-slate-800">Khách Hàng</h1>
+                <h1 className="text-2xl font-bold text-slate-800">Quản Lý Khách Hàng</h1>
                 <button onClick={handleOpenAdd} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
                     <Plus size={20} /> Thêm mới
                 </button>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 mb-8">
                 {customers.map((c) => (
-                    <div
-                        key={c.id}
-                        className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:shadow-md transition-shadow"
-                    >
-                        {/* Thông tin chính */}
-                        <div className="flex-1 min-w-[200px]">
+                    <div key={c.id} className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:shadow-md transition-shadow">
+                        <div className="flex-1">
                             <h3 className="font-bold text-slate-800">{c.user_name}</h3>
                             <p className="text-sm text-slate-500">{c.email}</p>
                         </div>
 
-                        {/* Role & Status */}
                         <div className="flex items-center gap-8 flex-1 justify-center">
-                            <span className="text-sm font-medium px-3 py-1 bg-slate-100 rounded-full text-slate-600 capitalize">
+                            <span className="text-xs font-semibold px-3 py-1 bg-slate-100 rounded-full text-slate-600 uppercase">
                                 {c.role_user}
                             </span>
-
                             <div className="flex items-center gap-2">
-                                <span className={`w-2 h-2 rounded-full ${c.status_user?.toLowerCase() === 'active' ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
-                                <span className="text-sm text-slate-600">
-                                    {c.status_user?.toLowerCase() === 'active' ? 'Hoạt động' : 'Đã khóa'}
-                                </span>
+                                <span className={`w-2 h-2 rounded-full ${c.status_user === 'ACTIVE' ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
+                                <span className="text-sm text-slate-600">{c.status_user === 'ACTIVE' ? 'Hoạt động' : 'Đã khóa'}</span>
                             </div>
                         </div>
 
-                        {/* Nhóm nút hành động */}
-                        <div className="flex items-center gap-1 ml-4">
-                            <button
-                                onClick={() => handleResetPassword(c)}
-                                className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
-                                title="Cấp mật khẩu mới"
-                            >
-                                <KeyRound size={18} />
-                            </button>
+                        <div className="flex items-center gap-1">
+                            <button onClick={() => handleResetPassword(c)} className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg"><KeyRound size={18} /></button>
+                            <button onClick={() => handleOpenEdit(c)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"><Edit size={18} /></button>
+                            <button onClick={() => handleDelete(c.id)} className="p-2 text-green-500 hover:bg-red-50 rounded-lg"><Trash2 size={18} /></button>
+                            <button onClick={() => handleDeleteTrue(c.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><Trash2 size={18} /></button>
 
-                            <button
-                                onClick={() => handleOpenEdit(c)}
-                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                title="Sửa"
-                            >
-                                <Edit size={18} />
-                            </button>
-
-                            <button
-                                onClick={() => handleDelete(c.id)}
-                                className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                title="Xóa"
-                            >
-                                <Trash2 size={18} />
-                            </button>
                         </div>
                     </div>
                 ))}
+            </div>
+
+            {/* THANH PHÂN TRANG (PAGINATION) */}
+            <div className="flex justify-center items-center gap-2">
+                <button
+                    disabled={pagination.currentPage === 1}
+                    onClick={() => fetchCustomers(pagination.currentPage - 1)}
+                    className="p-2 border rounded-lg hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                    <ChevronLeft size={20} />
+                </button>
+
+                {[...Array(pagination.totalPages)].map((_, index) => (
+                    <button
+                        key={index + 1}
+                        onClick={() => fetchCustomers(index + 1)}
+                        className={`w-10 h-10 border rounded-lg font-medium transition-colors ${pagination.currentPage === index + 1
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "hover:bg-slate-50 text-slate-600"
+                            }`}
+                    >
+                        {index + 1}
+                    </button>
+                ))}
+
+                <button
+                    disabled={pagination.currentPage === pagination.totalPages}
+                    onClick={() => fetchCustomers(pagination.currentPage + 1)}
+                    className="p-2 border rounded-lg hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                    <ChevronRight size={20} />
+                </button>
             </div>
 
             <UserModal

@@ -15,7 +15,7 @@ const adminRoutes = [
     path: "/admin",
     element: <ProtectedRoute><AdminLayout /></ProtectedRoute>,
     children: [
-      { index: true, element: <Navigate to="/dashboard" replace /> },
+      { index: true, element: <Navigate to="/admin/dashboard" replace /> },
       { path: "dashboard", element: <Dashboard /> },
       { path: "users", element: <Users /> },
       { path: "room-types", element: <RoomTypes /> },

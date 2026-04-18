@@ -49,16 +49,64 @@ const RoomTypes = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const isEditing = !!editingId;
+
         try {
-            if (editingId) {
-                await axios.put(`http://localhost:5000/api/room-types/${editingId}`, formData);
-            } else {
-                await axios.post("http://localhost:5000/api/room-types", formData);
+            const form = new FormData();
+
+            form.append("room_name", formData.room_name);
+            form.append("price_per_night", formData.price_per_night);
+            form.append("max_guests", formData.max_guests);
+            form.append("description", formData.description || "");
+
+            if (formData.image1 instanceof File) {
+                form.append("image1", formData.image1);
             }
+
+            if (formData.image2 instanceof File) {
+                form.append("image2", formData.image2);
+            }
+
+            if (isEditing) {
+                await axios.put(
+                    `http://localhost:5000/api/room-types/${editingId}`,
+                    form,
+                    {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                        },
+                    }
+                );
+            } else {
+                await axios.post(
+                    "http://localhost:5000/api/room-types",
+                    form,
+                    {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                        },
+                    }
+                );
+            }
+
+            alert(isEditing ? "Cập nhật thành công" : "Thêm thành công");
+
+            setFormData({
+                room_name: "",
+                price_per_night: "",
+                max_guests: "",
+                description: "",
+                image1: null,
+                image2: null,
+            });
+
             setIsModalOpen(false);
             fetchRooms();
-        } catch (error) {
-            alert("Có lỗi xảy ra khi lưu!");
+
+        } catch (err) {
+            console.error(err);
+            alert("Lỗi: " + (err.response?.data?.message || err.message));
         }
     };
 
@@ -70,11 +118,11 @@ const RoomTypes = () => {
                         <h1 className="text-2xl font-bold text-gray-800">Quản lý loại phòng</h1>
                         <p className="text-gray-500 text-sm">Danh sách các loại phòng hiện có trong hệ thống</p>
                     </div>
-                    <button 
-                        onClick={handleOpenAdd} 
+                    <button
+                        onClick={handleOpenAdd}
                         className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 transition-all shadow-md active:scale-95"
                     >
-                        <Plus size={20}/> Thêm loại phòng
+                        <Plus size={20} /> Thêm loại phòng
                     </button>
                 </div>
 
@@ -93,9 +141,9 @@ const RoomTypes = () => {
                             {rooms.map(r => (
                                 <tr key={r.id} className="hover:bg-gray-50 transition-colors">
                                     <td className="px-6 py-4">
-                                        <img 
-                                            src={r.image1 || "https://via.placeholder.com/60"} 
-                                            alt="room" 
+                                        <img
+                                            src={r.image1 || "https://via.placeholder.com/60"}
+                                            alt="room"
                                             className="w-16 h-10 object-cover rounded shadow-sm border border-gray-200"
                                         />
                                     </td>
@@ -105,24 +153,24 @@ const RoomTypes = () => {
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className="flex items-center gap-1.5 bg-gray-100 w-fit px-2.5 py-1 rounded-full text-xs font-medium">
-                                            <Users size={14}/> {r.max_guests} khách
+                                            <Users size={14} /> {r.max_guests} khách
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex justify-end gap-3">
-                                            <button 
+                                            <button
                                                 onClick={() => handleOpenEdit(r)}
                                                 className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                                 title="Sửa"
                                             >
-                                                <Edit size={18}/>
+                                                <Edit size={18} />
                                             </button>
-                                            <button 
+                                            <button
                                                 onClick={() => handleDelete(r.id)}
                                                 className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                 title="Xóa"
                                             >
-                                                <Trash2 size={18}/>
+                                                <Trash2 size={18} />
                                             </button>
                                         </div>
                                     </td>
