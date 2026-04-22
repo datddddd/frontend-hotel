@@ -3,6 +3,7 @@ import { useSearchParams, Link } from "react-router-dom";
 import Navbar from "../components/HomeNavabar";
 import Footer from "../components/HomeFooter";
 import api from "../services/api";
+import Loading from "./Loading";
 
 const PLACEHOLDER =
   "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80";
@@ -30,11 +31,10 @@ function SearchRoomCard({ room }) {
         {/* Badge số phòng trống */}
         <div className="absolute top-3 right-3">
           <span
-            className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-              room.available_rooms > 0
+            className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${room.available_rooms > 0
                 ? "bg-emerald-500 text-white"
                 : "bg-red-500 text-white"
-            }`}
+              }`}
           >
             {room.available_rooms > 0
               ? `${room.available_rooms} phòng trống`
@@ -65,9 +65,8 @@ function SearchRoomCard({ room }) {
               {images.map((_, i) => (
                 <span
                   key={i}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    i === imgIdx ? "bg-white" : "bg-white/50"
-                  }`}
+                  className={`w-2 h-2 rounded-full transition-colors ${i === imgIdx ? "bg-white" : "bg-white/50"
+                    }`}
                 />
               ))}
             </div>
@@ -165,7 +164,7 @@ const SearchResults = () => {
         }}
       >
         <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-3xl md:text-4xl font-serif font-bold text-white mb-3">
+          <h1 className="text-3xl md:text-4xl font-sans font-bold text-white mb-3 tracking-normal">
             Kết quả tìm kiếm
           </h1>
           {keyword && (
@@ -180,10 +179,7 @@ const SearchResults = () => {
       <div className="max-w-7xl mx-auto px-4 py-10">
         {/* Loading */}
         {loading && (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-12 h-12 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-gray-500">Đang tìm kiếm...</p>
-          </div>
+          <Loading />
         )}
 
         {/* Error */}

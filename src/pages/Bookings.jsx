@@ -23,7 +23,7 @@ const Bookings = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBooking, setEditingBooking] = useState(null);
-  const [formData, setFormData] = useState({ status: "BOOKED" });
+  const [formData, setFormData] = useState({ status: "BOOKED", payFull: false });
 
   const [filters, setFilters] = useState({
     status: "",
@@ -68,7 +68,7 @@ const Bookings = () => {
   // ================= ACTION =================
   const openModal = (booking) => {
     setEditingBooking(booking);
-    setFormData({ status: booking.status });
+    setFormData({ status: booking.status, payFull: false });
     setIsModalOpen(true);
   };
 
@@ -77,8 +77,15 @@ const Bookings = () => {
     try {
       await axios.put(
         `http://localhost:5000/api/bookings/${editingBooking.id}/status`,
-        formData
+        { status: formData.status }
       );
+
+      if (formData.payFull && Number(editingBooking?.remaining_amount) > 0) {
+        await axios.post(
+          `http://localhost:5000/api/bookings/${editingBooking.id}/pay-full`,
+          { payment_method: "cash" }
+        );
+      }
       setIsModalOpen(false);
       fetchBookings(currentPage);
     } catch (err) {
@@ -355,13 +362,30 @@ const Bookings = () => {
                 <select
                   className="w-full bg-white border border-slate-200 focus:ring-2 focus:ring-indigo-500 rounded-xl p-3 outline-none transition-all shadow-sm"
                   value={formData.status}
-                  onChange={e => setFormData({ status: e.target.value })}
+                  onChange={e => setFormData(prev => ({ ...prev, status: e.target.value }))}
                 >
                   <option value="BOOKED">Booked (Chờ nhận)</option>
                   <option value="checked_in">Checked In (Đã nhận)</option>
                   <option value="checked_out">Checked Out (Đã trả)</option>
                 </select>
               </div>
+
+              {Number(editingBooking?.remaining_amount) > 0 && (
+                <label className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="mt-1 h-4 w-4 accent-indigo-600"
+                    checked={formData.payFull}
+                    onChange={e => setFormData(prev => ({ ...prev, payFull: e.target.checked }))}
+                  />
+                  <div>
+                    <p className="font-semibold text-amber-700">Thanh toán hết</p>
+                    <p className="text-sm text-amber-600">
+                      Thu nốt số tiền còn lại: {(Number(editingBooking?.remaining_amount) || 0).toLocaleString("vi-VN")}₫
+                    </p>
+                  </div>
+                </label>
+              )}
 
               <div className="flex gap-3 pt-4">
                 <button 

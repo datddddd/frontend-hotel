@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { Edit, Trash2, Plus, KeyRound, ChevronLeft, ChevronRight } from "lucide-react";
 import UserModal from "../components/UserModal";
+import Loading from "./Loading";
 
 const Customers = () => {
     const [customers, setCustomers] = useState([]);
@@ -16,10 +17,12 @@ const Customers = () => {
         currentPage: 1,
         totalPages: 1
     });
+    const [loading, setLoading] = useState(false);
     const limit = 6;
 
     // Hàm lấy dữ liệu (sử dụng useCallback để tránh tạo lại hàm không cần thiết)
     const fetchCustomers = useCallback(async (page = 1) => {
+        setLoading(true);
         try {
             const res = await axios.get(`http://localhost:5000/api/users?page=${page}&limit=${limit}`);
             setCustomers(res.data.data);
@@ -29,6 +32,8 @@ const Customers = () => {
             });
         } catch (err) {
             console.error("Lỗi khi tải danh sách:", err);
+        } finally {
+            setLoading(false);
         }
     }, []);
 
@@ -103,6 +108,10 @@ const Customers = () => {
             }
         }
     };
+
+    if (loading) {
+        return <Loading />;
+    }
 
     return (
         <div className="p-8 max-w-6xl mx-auto">

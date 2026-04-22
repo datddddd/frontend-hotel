@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { BedDouble } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Loading from './Loading';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -35,6 +36,10 @@ const Login = () => {
       setLoading(false);
     }
   };
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">

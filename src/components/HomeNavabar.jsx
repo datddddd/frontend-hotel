@@ -67,29 +67,38 @@ const Navbar = () => {
           <a href="#rooms" className="hover:text-gold-400 transition">Rooms</a>
 
           {/* Kiểm tra điều kiện hiển thị nút */}
+          {/* Kiểm tra điều kiện hiển thị nút */}
           {user ? (
-            <div className="flex items-center gap-4">
-              <span className="text-gold-400 lowercase italic">Hi, {displayName}</span>
-              <button
-                onClick={handleLogout}
-                className="bg-red-600/80 text-white px-6 py-2 hover:bg-red-700 transition-all font-bold">
-                Logout
-              </button>
-              {isAdmin && (
-                <Link
-                  to="/admin/dashboard"
-                  className="bg-blue-600/80 text-white px-6 py-2 hover:bg-blue-700 transition-all font-bold"
+            <div className="flex items-center gap-6">
+              <div className="flex flex-col items-end leading-tight">
+                <span className="text-[10px] text-white/50 uppercase tracking-widest">Welcome</span>
+                <span className="text-gold-400 italic font-serif text-sm capitalize">{displayName}</span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {isAdmin && (
+                  <Link
+                    to="/admin/dashboard"
+                    className="border border-blue-400/40 text-blue-400 px-4 py-1.5 hover:bg-blue-400 hover:text-white transition-all duration-300 text-[10px] font-bold tracking-[0.1em]"
+                  >
+                    ADMIN PANEL
+                  </Link>
+                )}
+
+                <button
+                  onClick={handleLogout}
+                  className="border border-red-500/40 text-red-500 px-4 py-1.5 hover:bg-red-500 hover:text-white transition-all duration-300 text-[10px] font-bold tracking-[0.1em]"
                 >
-                  Admin
-                </Link>
-              )}
+                  LOGOUT
+                </button>
+              </div>
             </div>
           ) : (
             <Link
               to="/login"
-              className="bg-white text-black px-6 py-2 hover:bg-gold-500 hover:text-white transition-all font-bold"
+              className="bg-white text-black px-8 py-2 hover:bg-amber-500 hover:text-white transition-all duration-500 font-bold text-[10px] tracking-[0.2em]"
             >
-              Login
+              LOGIN
             </Link>
           )}
         </div>

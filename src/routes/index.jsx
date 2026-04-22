@@ -2,6 +2,7 @@
 import { Routes, Route } from 'react-router-dom';
 import publicRoutes from './publicRoutes';
 import adminRoutes from './adminRoutes';
+import NotFound from "../pages/NotFound";
 
 const AppRoutes = () => {
   return (
@@ -32,6 +33,8 @@ const AppRoutes = () => {
           ))}
         </Route>
       ))}
+
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };

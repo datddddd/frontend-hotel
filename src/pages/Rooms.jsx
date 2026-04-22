@@ -15,6 +15,8 @@ const Rooms = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const limit = 6;
+  const [searchInput, setSearchInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -26,10 +28,17 @@ const Rooms = () => {
   });
 
   // ================= FETCH ROOMS =================
-  const fetchRooms = async (page = 1) => {
+  const fetchRooms = async (page = 1, search = "") => {
     try {
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+      });
+      if (search) {
+        params.append("search", search);
+      }
       const res = await axios.get(
-        `http://localhost:5000/api/rooms?page=${page}&limit=${limit}`
+        `http://localhost:5000/api/rooms?${params.toString()}`
       );
       setRooms(res.data.data);
       setTotalPages(res.data.pagination.totalPages);
@@ -49,8 +58,17 @@ const Rooms = () => {
   };
 
   useEffect(() => {
-    fetchRooms(currentPage);
-  }, [currentPage]);
+    fetchRooms(currentPage, searchQuery);
+  }, [currentPage, searchQuery]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setCurrentPage(1);
+      setSearchQuery(searchInput.trim());
+    }, 350);
+
+    return () => clearTimeout(timeout);
+  }, [searchInput]);
 
   useEffect(() => {
     fetchRoomTypes();
@@ -94,7 +112,7 @@ const Rooms = () => {
       }
 
       setIsModalOpen(false);
-      fetchRooms(currentPage);
+      fetchRooms(currentPage, searchQuery);
     } catch (err) {
       alert(err.response?.data?.message || err.message);
     }
@@ -110,7 +128,7 @@ const Rooms = () => {
       if (rooms.length === 1 && currentPage > 1) {
         setCurrentPage(prev => prev - 1);
       } else {
-        fetchRooms(currentPage);
+        fetchRooms(currentPage, searchQuery);
       }
     } catch (err) {
       alert("Không thể xóa");
@@ -139,12 +157,21 @@ const Rooms = () => {
           Quản lý phòng ({currentPage}/{totalPages})
         </h1>
 
-        <button
-          onClick={() => openModal()}
-          className="bg-indigo-600 text-white px-4 py-2 rounded flex gap-2 items-center"
-        >
-          <Plus size={18}/> Thêm phòng
-        </button>
+        <div className="flex items-center gap-3">
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Tìm theo số phòng..."
+            className="w-56 border border-slate-300 rounded px-3 py-2 bg-white outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <button
+            onClick={() => openModal()}
+            className="bg-indigo-600 text-white px-4 py-2 rounded flex gap-2 items-center"
+          >
+            <Plus size={18}/> Thêm phòng
+          </button>
+        </div>
       </div>
 
       {/* LIST */}

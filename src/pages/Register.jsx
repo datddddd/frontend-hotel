@@ -1,6 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import Loading from "./Loading";
 
 const Register = () => {
     const navigate = useNavigate();
@@ -13,6 +14,7 @@ const Register = () => {
 
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
         setForm({
@@ -25,6 +27,7 @@ const Register = () => {
         e.preventDefault();
         setMessage("");
         setError("");
+        setLoading(true);
 
         try {
             const res = await axios.post("http://localhost:5000/api/register", form);
@@ -41,8 +44,14 @@ const Register = () => {
             } else {
                 setError("Có lỗi xảy ra");
             }
+        } finally {
+            setLoading(false);
         }
     };
+
+    if (loading) {
+        return <Loading />;
+    }
 
     // 👇 RETURN PHẢI NẰM TRONG COMPONENT
     return (
