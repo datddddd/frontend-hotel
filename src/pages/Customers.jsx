@@ -1,40 +1,269 @@
-import { useState } from 'react';
+import { useEffect, useState } from "react";
+import axios from "axios";
+import {
+  Edit,
+  Trash2,
+  Plus,
+  ChevronLeft,
+  ChevronRight,
+  User,
+  Phone,
+  Mail,
+  CalendarCheck // Thêm icon này để đại diện cho lượt đặt phòng
+} from "lucide-react";
 
 const Customers = () => {
-  const [customers] = useState([
-    { id: 1, name: 'John Doe', email: 'john.doe@example.com', phone: '123-456-7890', card: '**** **** **** 1234', createdAt: '2023-10-01' }
-  ]);
+  const [customers, setCustomers] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 6;
+  const [searchInput, setSearchInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+
+  const [formData, setFormData] = useState({
+    full_name: "",
+    email: "",
+    phone: "",
+    id_card: ""
+  });
+
+  const fetchCustomers = async (page = 1, search = "") => {
+    try {
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+      });
+      if (search) params.append("search", search);
+
+      const res = await axios.get(`http://localhost:5000/api/customers?${params.toString()}`);
+
+      // Backend trả về: { data: [...], pagination: { totalPages: ... } }
+      setCustomers(res.data.data);
+      setTotalPages(res.data.pagination.totalPages);
+    } catch (err) {
+      console.error("Lỗi fetch customers:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchCustomers(currentPage, searchQuery);
+  }, [currentPage, searchQuery]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setCurrentPage(1);
+      setSearchQuery(searchInput.trim());
+    }, 350);
+    return () => clearTimeout(timeout);
+  }, [searchInput]);
+
+  const openModal = (customer = null) => {
+    if (customer) {
+      setEditingId(customer.id);
+      setFormData({
+        full_name: customer.full_name || "",
+        email: customer.email || "",
+        phone: customer.phone || "",
+        id_card: customer.id_card || ""
+      });
+    } else {
+      setEditingId(null);
+      setFormData({ full_name: "", email: "", phone: "", id_card: "" });
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (editingId) {
+        await axios.put(`http://localhost:5000/api/customers/${editingId}`, formData);
+      } else {
+        await axios.post("http://localhost:5000/api/customers", formData);
+        setCurrentPage(1);
+      }
+      setIsModalOpen(false);
+      fetchCustomers(currentPage, searchQuery);
+    } catch (err) {
+      alert(err.response?.data?.message || err.message);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Bạn có chắc muốn xóa khách hàng này?")) return;
+    try {
+      await axios.delete(`http://localhost:5000/api/customers/${id}`);
+      fetchCustomers(currentPage, searchQuery);
+    } catch (err) {
+      alert("Không thể xóa khách hàng");
+    }
+  };
+
+  const getPages = () => {
+    let start = Math.max(1, currentPage - 2);
+    let end = Math.min(totalPages, currentPage + 2);
+    let pages = [];
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">Khách Hàng</h1>
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50 border-b border-slate-200">
-            <tr>
-              <th className="px-6 py-4 text-sm font-semibold text-slate-600">Tên</th>
-              <th className="px-6 py-4 text-sm font-semibold text-slate-600">Email</th>
-              <th className="px-6 py-4 text-sm font-semibold text-slate-600">Số Điện Thoại</th>
-              <th className="px-6 py-4 text-sm font-semibold text-slate-600">Thẻ</th>
-              <th className="px-6 py-4 text-sm font-semibold text-slate-600">Tạo Ngày</th>
-
-
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {customers.map((c) => (
-              <tr key={c.id}>
-                <td className="px-6 py-4 text-slate-800 font-medium">{c.name}</td>
-                <td className="px-6 py-4 text-slate-600">{c.email}</td>
-                <td className="px-6 py-4 text-slate-600">{c.phone}</td>
-                <td className="px-6 py-4 text-slate-600">{c.card}</td>
-                <td className="px-6 py-4 text-slate-600">{c.createdAt}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <div className="p-8 bg-gray-50 min-h-screen">
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row justify-between mb-6 gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Quản lý khách hàng</h1>
+          <p className="text-sm text-gray-500">Trang {currentPage}/{totalPages}</p>
         </div>
+        <div className="flex items-center gap-3">
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Tìm tên hoặc SĐT..."
+            className="w-64 border rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button onClick={() => openModal()} className="bg-blue-600 text-white px-4 py-2 rounded-lg flex gap-2 items-center">
+            <Plus size={18} /> Thêm mới
+          </button>
+        </div>
+      </div>
+
+      {/* CUSTOMER LIST */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {customers.map(c => (
+          <div key={c.id} className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 relative">
+
+            {/* Hiển thị Total Bookings ở góc trên bên phải dạng Badge */}
+            <div className="absolute top-4 right-4 flex flex-col items-end">
+              <span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase mb-2">
+                Khách hàng
+              </span>
+              <div className="flex items-center gap-1 text-sm font-semibold text-gray-700 bg-gray-50 px-2 py-1 rounded-md border">
+                <CalendarCheck size={14} className="text-blue-600" />
+                <span>{c.total_bookings || 0} lần đặt</span>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 w-12 h-12 rounded-full flex items-center justify-center text-blue-600 mb-4">
+              <User size={28} />
+            </div>
+
+            <h3 className="font-bold text-lg text-gray-800 mb-1">{c.full_name}</h3>
+
+            <div className="space-y-1.5 mb-4">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Phone size={14} /> {c.phone}
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600 italic">
+                <Mail size={14} /> {c.email || "N/A"}
+              </div>
+            </div>
+
+            <div className="flex justify-between items-center pt-4 border-t border-gray-50">
+              <div className="flex gap-2">
+                <button onClick={() => openModal(c)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                  <Edit size={18} />
+                </button>
+                <button onClick={() => handleDelete(c.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* PAGINATION */}
+      <div className="flex justify-center mt-10 gap-2">
+        <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} className="p-2 border rounded-lg bg-white disabled:opacity-50">
+          <ChevronLeft size={20} />
+        </button>
+        {getPages().map(p => (
+          <button key={p} onClick={() => setCurrentPage(p)} className={`px-4 py-2 rounded-lg ${currentPage === p ? "bg-blue-600 text-white" : "bg-white border hover:bg-gray-50"}`}>
+            {p}
+          </button>
+        ))}
+        <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => prev + 1)} className="p-2 border rounded-lg bg-white disabled:opacity-50">
+          <ChevronRight size={20} />
+        </button>
+      </div>
+
+      {/* MODAL */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex justify-center items-center bg-black/40 backdrop-blur-sm z-50 p-4">
+          <div className="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl">
+            <h2 className="mb-6 font-bold text-2xl text-gray-800">
+              {editingId ? "Cập nhật khách hàng" : "Thêm khách hàng mới"}
+            </h2>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
+                <input
+                  className="w-full border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Nguyễn Văn A"
+                  value={formData.full_name}
+                  onChange={e => setFormData({ ...formData, full_name: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+                <input
+                  className="w-full border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="0912345678"
+                  value={formData.phone}
+                  onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  className="w-full border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="example@gmail.com"
+                  value={formData.email}
+                  onChange={e => setFormData({ ...formData, email: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Số CCCD</label>
+                <input
+                  className="w-full border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Nhập số CCCD..."
+                  value={formData.id_card}
+                  onChange={e => setFormData({ ...formData, id_card: e.target.value })}
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  Đóng
+                </button>
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
+                >
+                  {editingId ? "Lưu thay đổi" : "Tạo khách hàng"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+};
+
 export default Customers;

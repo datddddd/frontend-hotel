@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import api from "../services/api";
 
 /**
@@ -59,9 +59,8 @@ function RoomCard({ room }) {
               {images.map((_, i) => (
                 <span
                   key={i}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    i === imgIdx ? "bg-white" : "bg-white/50"
-                  }`}
+                  className={`w-2 h-2 rounded-full transition-colors ${i === imgIdx ? "bg-white" : "bg-white/50"
+                    }`}
                 />
               ))}
             </div>
@@ -103,23 +102,37 @@ const Rooms = () => {
   const [roomTypes, setRoomTypes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
+  const [isSearching, setIsSearching] = useState(false);
+
+  const fetchRooms = useCallback(async (filters = null) => {
+    setLoading(true);
+    try {
+      let res;
+      if (filters) {
+        // Chuyển sang gọi endpoint search
+        res = await api.get("/room-types/search", { params: filters });
+      } else {
+        res = await api.get(ROOM_TYPES_ENDPOINT);
+      }
+      setRoomTypes(Array.isArray(res.data) ? res.data : []);
+      setPage(0); // Reset về trang 1 khi search/load mới
+    } catch (err) {
+      console.error("Lỗi tải phòng:", err);
+      setRoomTypes([]);
+    } finally {
+      setLoading(false);
+      setIsSearching(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await api.get(ROOM_TYPES_ENDPOINT);
-        if (!cancelled) setRoomTypes(Array.isArray(res.data) ? res.data : []);
-      } catch {
-        if (!cancelled) setRoomTypes([]);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    fetchRooms();
+  }, [fetchRooms]);
+
+  const handleSearch = (filters) => {
+    setIsSearching(true);
+    fetchRooms(filters);
+  };
 
   const totalPages = Math.ceil(roomTypes.length / ROOMS_PER_PAGE);
   const startIndex = page * ROOMS_PER_PAGE;
@@ -143,7 +156,8 @@ const Rooms = () => {
 
   return (
     <div id="rooms" className="py-16 max-w-7xl mx-auto px-4">
-      <div className="mb-8 flex items-center justify-between">
+
+      <div className="mt-16 mb-8 flex items-center justify-between">
         <h2 className="text-3xl font-bold text-center flex-1">Rooms & Suites</h2>
         {totalPages > 1 && (
           <div className="flex gap-2">

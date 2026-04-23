@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 import { BedDouble } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Loading from './Loading';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -10,7 +11,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { login } = useAuth();
+  const { login, googleLogin } = useAuth();
   const navigate = useNavigate(); 
 
   const handleSubmit = async (e) => {
@@ -32,6 +33,22 @@ const Login = () => {
 
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoading(true);
+    try {
+      const res = await googleLogin({ credential: credentialResponse.credential });
+      if (res.user.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/home'); 
+      }
+    } catch (err) {
+      setError('Google login failed');
     } finally {
       setLoading(false);
     }
@@ -80,6 +97,24 @@ const Login = () => {
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-slate-500">Hoặc tiếp tục với</span>
+            </div>
+          </div>
+
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => setError('Google Login Failed')}
+              useOneTap
+            />
+          </div>
+
           <div className="text-center text-sm text-slate-500 mt-4">
             Chưa có tài khoản? <a href="/register" className="text-blue-600 hover:underline">Đăng ký</a>
           </div>
