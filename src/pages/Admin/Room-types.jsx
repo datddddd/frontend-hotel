@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../services/api";
 import { Edit, Trash2, Plus, Users, DollarSign } from "lucide-react";
-import RoomTypeModal from "../components/RoomTypeModal";
+import RoomTypeModal from "../../components/Admin/RoomTypeModal";
 
 const RoomTypes = () => {
     const [rooms, setRooms] = useState([]);
@@ -19,7 +19,7 @@ const RoomTypes = () => {
 
     const fetchRooms = async () => {
         try {
-            const res = await axios.get("http://localhost:5000/api/room-types");
+            const res = await api.get("/room-types");
             setRooms(res.data);
         } catch (error) {
             console.error("Lỗi khi tải dữ liệu:", error);
@@ -42,7 +42,7 @@ const RoomTypes = () => {
 
     const handleDelete = async (id) => {
         if (window.confirm("Bạn có chắc chắn muốn xóa loại phòng này?")) {
-            await axios.delete(`http://localhost:5000/api/room-types/${id}`);
+            await api.delete(`/room-types/${id}`);
             fetchRooms();
         }
     };
@@ -69,8 +69,8 @@ const RoomTypes = () => {
             }
 
             if (isEditing) {
-                await axios.put(
-                    `http://localhost:5000/api/room-types/${editingId}`,
+                await api.put(
+                    `/room-types/${editingId}`,
                     form,
                     {
                         headers: {
@@ -79,8 +79,8 @@ const RoomTypes = () => {
                     }
                 );
             } else {
-                await axios.post(
-                    "http://localhost:5000/api/room-types",
+                await api.post(
+                    "/room-types",
                     form,
                     {
                         headers: {

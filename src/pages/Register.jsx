@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import api from "../services/api";
 import { useNavigate } from "react-router-dom";
 import Loading from "./Loading";
 
@@ -30,7 +30,7 @@ const Register = () => {
         setLoading(true);
 
         try {
-            const res = await axios.post("http://localhost:5000/api/register", form);
+            const res = await api.post("/register", form);
 
             setMessage(res.data.message);
 
@@ -53,7 +53,7 @@ const Register = () => {
         return <Loading />;
     }
 
-    // 👇 RETURN PHẢI NẰM TRONG COMPONENT
+  
     return (
         <div className="flex justify-center items-center min-h-screen bg-gray-100">
             <form
@@ -64,7 +64,7 @@ const Register = () => {
 
                 <input
                     type="text"
-                    name="user_name"   // 👈 sửa đúng với backend
+                    name="user_name"   
                     placeholder="Tên người dùng"
                     value={form.user_name}
                     onChange={handleChange}

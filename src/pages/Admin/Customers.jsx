@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../services/api";
+import { customerService } from "../../services/customerService";
+import Create from "../../components/Customer/Create";
+import Pagination from "../../components/common/Pagination";
 import {
   Edit,
   Trash2,
@@ -9,7 +12,7 @@ import {
   User,
   Phone,
   Mail,
-  CalendarCheck // Thêm icon này để đại diện cho lượt đặt phòng
+  CalendarCheck 
 } from "lucide-react";
 
 const Customers = () => {
@@ -37,7 +40,7 @@ const Customers = () => {
       });
       if (search) params.append("search", search);
 
-      const res = await axios.get(`http://localhost:5000/api/customers?${params.toString()}`);
+      const res = await customerService.getCustomers(params);
 
       // Backend trả về: { data: [...], pagination: { totalPages: ... } }
       setCustomers(res.data.data);
@@ -79,9 +82,9 @@ const Customers = () => {
     e.preventDefault();
     try {
       if (editingId) {
-        await axios.put(`http://localhost:5000/api/customers/${editingId}`, formData);
+        await customerService.updateCustomer(editingId, formData);
       } else {
-        await axios.post("http://localhost:5000/api/customers", formData);
+        await customerService.createCustomer(formData);
         setCurrentPage(1);
       }
       setIsModalOpen(false);
@@ -94,7 +97,7 @@ const Customers = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Bạn có chắc muốn xóa khách hàng này?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/customers/${id}`);
+      await customerService.deleteCustomer(id);
       fetchCustomers(currentPage, searchQuery);
     } catch (err) {
       alert("Không thể xóa khách hàng");
@@ -177,91 +180,20 @@ const Customers = () => {
       </div>
 
       {/* PAGINATION */}
-      <div className="flex justify-center mt-10 gap-2">
-        <button disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)} className="p-2 border rounded-lg bg-white disabled:opacity-50">
-          <ChevronLeft size={20} />
-        </button>
-        {getPages().map(p => (
-          <button key={p} onClick={() => setCurrentPage(p)} className={`px-4 py-2 rounded-lg ${currentPage === p ? "bg-blue-600 text-white" : "bg-white border hover:bg-gray-50"}`}>
-            {p}
-          </button>
-        ))}
-        <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => prev + 1)} className="p-2 border rounded-lg bg-white disabled:opacity-50">
-          <ChevronRight size={20} />
-        </button>
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
 
       {/* MODAL */}
-      {isModalOpen && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black/40 backdrop-blur-sm z-50 p-4">
-          <div className="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl">
-            <h2 className="mb-6 font-bold text-2xl text-gray-800">
-              {editingId ? "Cập nhật khách hàng" : "Thêm khách hàng mới"}
-            </h2>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
-                <input
-                  className="w-full border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Nguyễn Văn A"
-                  value={formData.full_name}
-                  onChange={e => setFormData({ ...formData, full_name: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
-                <input
-                  className="w-full border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="0912345678"
-                  value={formData.phone}
-                  onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  className="w-full border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="example@gmail.com"
-                  value={formData.email}
-                  onChange={e => setFormData({ ...formData, email: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Số CCCD</label>
-                <input
-                  className="w-full border border-gray-300 p-2.5 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Nhập số CCCD..."
-                  value={formData.id_card}
-                  onChange={e => setFormData({ ...formData, id_card: e.target.value })}
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  Đóng
-                </button>
-                <button
-                  type="submit"
-                  className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
-                >
-                  {editingId ? "Lưu thay đổi" : "Tạo khách hàng"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <Create
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmit}
+        formData={formData}
+        setFormData={setFormData}
+        editingId={editingId} />
     </div>
   );
 };

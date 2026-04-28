@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import api from "../services/api";
+import api from "../../services/api";
 
 /**
  * Rooms & Suites — ảnh và tên lấy từ bảng room_types (API GET /room-types).

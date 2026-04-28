@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../services/api";
 import {
   Edit,
   Trash2,
@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
+import Pagination from "../../components/common/Pagination";
 
 const Rooms = () => {
   const [rooms, setRooms] = useState([]);
@@ -37,8 +38,8 @@ const Rooms = () => {
       if (search) {
         params.append("search", search);
       }
-      const res = await axios.get(
-        `http://localhost:5000/api/rooms?${params.toString()}`
+      const res = await api.get(
+        `/rooms?${params.toString()}`
       );
       setRooms(res.data.data);
       setTotalPages(res.data.pagination.totalPages);
@@ -50,7 +51,7 @@ const Rooms = () => {
   // ================= FETCH ROOM TYPES =================
   const fetchRoomTypes = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/room-types");
+      const res = await api.get("/room-types");
       setRoomTypes(res.data);
     } catch (err) {
       console.error("Lỗi fetch room types:", err);
@@ -99,13 +100,13 @@ const Rooms = () => {
     e.preventDefault();
     try {
       if (editingId) {
-        await axios.put(
-          `http://localhost:5000/api/rooms/${editingId}`,
+        await api.put(
+          `/rooms/${editingId}`,
           formData
         );
       } else {
-        await axios.post(
-          "http://localhost:5000/api/rooms",
+        await api.post(
+          "/rooms",
           formData
         );
         setCurrentPage(1); // về trang đầu
@@ -123,7 +124,7 @@ const Rooms = () => {
     if (!window.confirm("Bạn có chắc muốn xóa phòng này?")) return;
 
     try {
-      await axios.delete(`http://localhost:5000/api/rooms/${id}`);
+      await api.delete(`/rooms/${id}`);
 
       if (rooms.length === 1 && currentPage > 1) {
         setCurrentPage(prev => prev - 1);
@@ -169,7 +170,7 @@ const Rooms = () => {
             onClick={() => openModal()}
             className="bg-indigo-600 text-white px-4 py-2 rounded flex gap-2 items-center"
           >
-            <Plus size={18}/> Thêm phòng
+            <Plus size={18} /> Thêm phòng
           </button>
         </div>
       </div>
@@ -187,23 +188,22 @@ const Rooms = () => {
             </p>
 
             {/* STATUS */}
-            <span className={`inline-block mt-2 px-2 py-1 rounded text-xs ${
-              r.status === "available"
-                ? "bg-green-100 text-green-700"
-                : r.status === "occupied"
+            <span className={`inline-block mt-2 px-2 py-1 rounded text-xs ${r.status === "available"
+              ? "bg-green-100 text-green-700"
+              : r.status === "occupied"
                 ? "bg-red-100 text-red-700"
                 : "bg-yellow-100 text-yellow-700"
-            }`}>
+              }`}>
               {r.status}
             </span>
 
             {/* ACTION */}
             <div className="flex gap-2 mt-4">
               <button onClick={() => openModal(r)}>
-                <Edit size={16}/>
+                <Edit size={16} />
               </button>
               <button onClick={() => handleDelete(r.id)}>
-                <Trash2 size={16}/>
+                <Trash2 size={16} />
               </button>
             </div>
           </div>
@@ -211,36 +211,11 @@ const Rooms = () => {
       </div>
 
       {/* PAGINATION */}
-      <div className="flex justify-center mt-8 gap-2">
-
-        <button
-          disabled={currentPage === 1}
-          onClick={() => setCurrentPage(prev => prev - 1)}
-        >
-          <ChevronLeft/>
-        </button>
-
-        {getPages().map(p => (
-          <button
-            key={p}
-            onClick={() => setCurrentPage(p)}
-            className={`px-3 py-1 rounded ${
-              currentPage === p
-                ? "bg-indigo-600 text-white"
-                : "bg-white border"
-            }`}
-          >
-            {p}
-          </button>
-        ))}
-
-        <button
-          disabled={currentPage === totalPages}
-          onClick={() => setCurrentPage(prev => prev + 1)}
-        >
-          <ChevronRight/>
-        </button>
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
 
       {/* MODAL */}
       {isModalOpen && (

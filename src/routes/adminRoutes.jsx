@@ -1,12 +1,12 @@
 // src/routes/adminRoutes.jsx
 import { Navigate } from 'react-router-dom';
 
-import Dashboard from '../pages/Dashboard';
-import Users from '../pages/Users';
-import RoomTypes from '../pages/Room-types';
-import Rooms from '../pages/Rooms';
-import Bookings from '../pages/Bookings';
-import Customers from '../pages/Customers';
+import Dashboard from '../pages/Admin/Dashboard';
+import Users from '../pages/Admin/Users';
+import RoomTypes from '../pages/Admin/Room-types';
+import Rooms from '../pages/Admin/Rooms';
+import Bookings from '../pages/Admin/Bookings';
+import Customers from '../pages/Admin/Customers';
 import ProtectedRoute from '../layouts/ProtectedRoute';
 import AdminLayout from '../layouts/AdminLayout';
 

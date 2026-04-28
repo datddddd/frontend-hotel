@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import Navbar from "../components/HomeNavabar";
-import Footer from "../components/HomeFooter";
+import Navbar from "../components/Home/HomeNavabar";
+import Footer from "../components/Home/HomeFooter";
 import api from "../services/api";
 import Loading from "./Loading";
 
@@ -32,8 +32,8 @@ function SearchRoomCard({ room }) {
         <div className="absolute top-3 right-3">
           <span
             className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${room.available_rooms > 0
-                ? "bg-emerald-500 text-white"
-                : "bg-red-500 text-white"
+              ? "bg-emerald-500 text-white"
+              : "bg-red-500 text-white"
               }`}
           >
             {room.available_rooms > 0

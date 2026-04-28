@@ -1,11 +1,13 @@
 import { useEffect, useState, useCallback } from "react";
-import axios from "axios";
+import api from "../../services/api";
 import { Edit, Trash2, Plus, KeyRound, ChevronLeft, ChevronRight } from "lucide-react";
-import UserModal from "../components/UserModal";
-import Loading from "./Loading";
+import UserModal from "../../components/Admin/UserModal";
+import Pagination from "../../components/common/Pagination";
+import { userService } from "../../services/userService";
+import Loading from "../Loading";
 
-const Customers = () => {
-    const [customers, setCustomers] = useState([]);
+const Users = () => {
+    const [users, setUsers] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({
@@ -21,11 +23,11 @@ const Customers = () => {
     const limit = 6;
 
     // Hàm lấy dữ liệu (sử dụng useCallback để tránh tạo lại hàm không cần thiết)
-    const fetchCustomers = useCallback(async (page = 1) => {
+    const fetchUsers = useCallback(async (page = 1) => {
         setLoading(true);
         try {
-            const res = await axios.get(`http://localhost:5000/api/users?page=${page}&limit=${limit}`);
-            setCustomers(res.data.data);
+            const res = await userService.getUsers(page, limit);
+            setUsers(res.data.data);
             setPagination({
                 currentPage: res.data.pagination.currentPage,
                 totalPages: res.data.pagination.totalPages
@@ -38,8 +40,8 @@ const Customers = () => {
     }, []);
 
     useEffect(() => {
-        fetchCustomers(1);
-    }, [fetchCustomers]);
+        fetchUsers(1);
+    }, [fetchUsers]);
 
     // Các hàm xử lý giữ nguyên logic của bạn
     const handleOpenAdd = () => {
@@ -57,9 +59,9 @@ const Customers = () => {
     const handleDelete = async (id) => {
         if (window.confirm("Bạn có chắc chắn muốn xóa?")) {
             try {
-                await axios.delete(`http://localhost:5000/api/users/${id}`);
+                await userService.deleteUser(id);
                 // Load lại trang hiện tại sau khi xóa
-                fetchCustomers(pagination.currentPage);
+                fetchUsers(pagination.currentPage);
                 alert("Đã xóa thành công!");
             } catch (err) {
                 alert("Không thể xóa người dùng này.");
@@ -70,9 +72,9 @@ const Customers = () => {
     const handleDeleteTrue = async (id) => {
         if (window.confirm("Bạn có chắc chắn muốn xóa vĩnh viễn?")) {
             try {
-                await axios.delete(`http://localhost:5000/api/users/${id}/force`);
+                await userService.forceDeleteUser(id);
                 // Load lại trang hiện tại sau khi xóa
-                fetchCustomers(pagination.currentPage);
+                fetchUsers(pagination.currentPage);
                 alert("Đã xóa vĩnh viễn!");
             } catch (err) {
                 alert("Không thể xóa người dùng này.");
@@ -84,12 +86,12 @@ const Customers = () => {
         e.preventDefault();
         try {
             if (editingId) {
-                await axios.put(`http://localhost:5000/api/users/${editingId}`, formData);
+                await userService.updateUser(editingId, formData);
             } else {
-                await axios.post("http://localhost:5000/api/users", formData);
+                await userService.createUser(formData);
             }
             setIsModalOpen(false);
-            fetchCustomers(pagination.currentPage);
+            fetchUsers(pagination.currentPage);
         } catch (err) {
             alert("Lỗi: " + err.response?.data?.message);
         }
@@ -99,9 +101,7 @@ const Customers = () => {
         const randomPassword = Math.random().toString(36).slice(-8);
         if (window.confirm(`Cấp mật khẩu mới cho [${user.user_name}]: ${randomPassword}`)) {
             try {
-                await axios.put(`http://localhost:5000/api/users/${user.id}/reset-password`, {
-                    newPassword: randomPassword
-                });
+                await userService.resetPassword(user.id, randomPassword);
                 alert(`Thành công! Mật khẩu mới là: ${randomPassword}`);
             } catch (err) {
                 alert("Lỗi khi đặt lại mật khẩu!");
@@ -123,28 +123,28 @@ const Customers = () => {
             </div>
 
             <div className="space-y-3 mb-8">
-                {customers.map((c) => (
-                    <div key={c.id} className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:shadow-md transition-shadow">
+                {users.map((u) => (
+                    <div key={u.id} className="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:shadow-md transition-shadow">
                         <div className="flex-1">
-                            <h3 className="font-bold text-slate-800">{c.user_name}</h3>
-                            <p className="text-sm text-slate-500">{c.email}</p>
+                            <h3 className="font-bold text-slate-800">{u.user_name}</h3>
+                            <p className="text-sm text-slate-500">{u.email}</p>
                         </div>
 
                         <div className="flex items-center gap-8 flex-1 justify-center">
                             <span className="text-xs font-semibold px-3 py-1 bg-slate-100 rounded-full text-slate-600 uppercase">
-                                {c.role_user}
+                                {u.role_user}
                             </span>
                             <div className="flex items-center gap-2">
-                                <span className={`w-2 h-2 rounded-full ${c.status_user === 'ACTIVE' ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
-                                <span className="text-sm text-slate-600">{c.status_user === 'ACTIVE' ? 'Hoạt động' : 'Đã khóa'}</span>
+                                <span className={`w-2 h-2 rounded-full ${u.status_user === 'ACTIVE' ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
+                                <span className="text-sm text-slate-600">{u.status_user === 'ACTIVE' ? 'Hoạt động' : 'Đã khóa'}</span>
                             </div>
                         </div>
 
                         <div className="flex items-center gap-1">
-                            <button onClick={() => handleResetPassword(c)} className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg"><KeyRound size={18} /></button>
-                            <button onClick={() => handleOpenEdit(c)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"><Edit size={18} /></button>
-                            <button onClick={() => handleDelete(c.id)} className="p-2 text-green-500 hover:bg-red-50 rounded-lg"><Trash2 size={18} /></button>
-                            <button onClick={() => handleDeleteTrue(c.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><Trash2 size={18} /></button>
+                            <button onClick={() => handleResetPassword(u)} className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg"><KeyRound size={18} /></button>
+                            <button onClick={() => handleOpenEdit(u)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"><Edit size={18} /></button>
+                            <button onClick={() => handleDelete(u.id)} className="p-2 text-green-500 hover:bg-red-50 rounded-lg"><Trash2 size={18} /></button>
+                            <button onClick={() => handleDeleteTrue(u.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><Trash2 size={18} /></button>
 
                         </div>
                     </div>
@@ -152,36 +152,12 @@ const Customers = () => {
             </div>
 
             {/* THANH PHÂN TRANG (PAGINATION) */}
-            <div className="flex justify-center items-center gap-2">
-                <button
-                    disabled={pagination.currentPage === 1}
-                    onClick={() => fetchCustomers(pagination.currentPage - 1)}
-                    className="p-2 border rounded-lg hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                    <ChevronLeft size={20} />
-                </button>
-
-                {[...Array(pagination.totalPages)].map((_, index) => (
-                    <button
-                        key={index + 1}
-                        onClick={() => fetchCustomers(index + 1)}
-                        className={`w-10 h-10 border rounded-lg font-medium transition-colors ${pagination.currentPage === index + 1
-                            ? "bg-blue-600 text-white border-blue-600"
-                            : "hover:bg-slate-50 text-slate-600"
-                            }`}
-                    >
-                        {index + 1}
-                    </button>
-                ))}
-
-                <button
-                    disabled={pagination.currentPage === pagination.totalPages}
-                    onClick={() => fetchCustomers(pagination.currentPage + 1)}
-                    className="p-2 border rounded-lg hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                    <ChevronRight size={20} />
-                </button>
-            </div>
+            <Pagination
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                onPageChange={fetchUsers}
+            />
+                {/* MODAL THÊM/SỬA */}
 
             <UserModal
                 isOpen={isModalOpen}
@@ -195,4 +171,4 @@ const Customers = () => {
     );
 };
 
-export default Customers;
+export default Users;

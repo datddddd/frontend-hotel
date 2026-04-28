@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -65,6 +65,10 @@ const Navbar = () => {
         <div className="flex items-center space-x-8 text-xs uppercase tracking-[0.2em] font-medium">
           <Link to="/home" className="hover:text-gold-400 transition">Home</Link>
           <a href="#rooms" className="hover:text-gold-400 transition">Rooms</a>
+          {user && (
+            <Link to="/my-bookings" className="hover:text-gold-400 transition italic">My Bookings</Link>
+          )}
+
 
           {/* Kiểm tra điều kiện hiển thị nút */}
           {/* Kiểm tra điều kiện hiển thị nút */}
@@ -84,6 +88,8 @@ const Navbar = () => {
                     ADMIN PANEL
                   </Link>
                 )}
+
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 
                 <button
                   onClick={handleLogout}

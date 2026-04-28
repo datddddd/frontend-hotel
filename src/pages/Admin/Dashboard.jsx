@@ -23,7 +23,7 @@ import {
   Bar,
   Cell
 } from "recharts";
-import Loading from "./Loading";
+import Loading from "../Loading";
 
 
 
