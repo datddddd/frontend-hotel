@@ -28,7 +28,7 @@ const AdminLayout = () => {
             className="font-bold text-xl text-blue-600 flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
             <BedDouble size={24} />
-            {isSidebarOpen && <h1 className="text-xl font-bold">LuxeStay</h1>}
+            {isSidebarOpen && <h1 className="text-xl font-bold">LakeSide</h1>}
           </Link>
         </div>
         <nav className="flex-1 p-4 space-y-2">
@@ -37,8 +37,8 @@ const AdminLayout = () => {
               key={item.name}
               to={item.path}
               className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-colors ${location.pathname === item.path
-                  ? 'bg-blue-50 text-blue-600'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                ? 'bg-blue-50 text-blue-600'
+                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                 }`}
             >
               {item.icon}

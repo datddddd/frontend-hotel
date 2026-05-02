@@ -5,6 +5,11 @@ const AuthContext = createContext(null);
 
 // Đừng dùng 'export' ở đây
 const AuthProvider = ({ children }) => {
+  // Xóa token cũ nếu còn sót lại từ phiên bản trước
+  if (localStorage.getItem('token')) {
+    localStorage.removeItem('token');
+  }
+
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
     try {
@@ -17,8 +22,7 @@ const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     const response = await api.post('/login', credentials);
-    const { token, user: userData } = response.data;
-    localStorage.setItem('token', token);
+    const { user: userData } = response.data;
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
     return response.data;
@@ -26,15 +30,18 @@ const AuthProvider = ({ children }) => {
 
   const googleLogin = async (googleData) => {
     const response = await api.post('/google-login', googleData);
-    const { token, user: userData } = response.data;
-    localStorage.setItem('token', token);
+    const { user: userData } = response.data;
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
     return response.data;
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
+  const logout = async () => {
+    try {
+      await api.post('/logout');
+    } catch (e) {
+      console.error('Logout error', e);
+    }
     localStorage.removeItem('user');
     setUser(null);
   };
@@ -43,8 +50,14 @@ const AuthProvider = ({ children }) => {
     await api.post('/register', data);
   };
 
+  const updateUserData = (newData) => {
+    const updatedUser = { ...user, ...newData };
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    setUser(updatedUser);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, googleLogin, logout, register }}>
+    <AuthContext.Provider value={{ user, login, googleLogin, logout, register, updateUserData }}>
       {children}
     </AuthContext.Provider>
   );

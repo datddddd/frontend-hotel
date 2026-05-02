@@ -6,6 +6,9 @@ import BookingPage from "../pages/BookingPage";
 import SearchResults from "../pages/SearchResults";
 import Loading from "../pages/Loading";
 import MyBookings from "../pages/MyBookings";
+import ForgotPassword from "../pages/ForgotPassword";
+import ResetPassword from "../pages/ResetPassword";
+import Profile from "../pages/Profile";
 
 const publicRoutes = [
   { path: "/", element: <Home /> },
@@ -16,6 +19,9 @@ const publicRoutes = [
   { path: "/search", element: <SearchResults /> },
   { path: "/loading", element: <Loading /> },
   { path: "/my-bookings", element: <MyBookings /> },
+  { path: "/profile", element: <Profile /> },
+  { path: "/forgot-password", element: <ForgotPassword /> },
+  { path: "/reset-password", element: <ResetPassword /> },
 ];
 
 export default publicRoutes;

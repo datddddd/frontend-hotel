@@ -64,11 +64,12 @@ const Navbar = () => {
 
         <div className="flex items-center space-x-8 text-xs uppercase tracking-[0.2em] font-medium">
           <Link to="/home" className="hover:text-gold-400 transition">Home</Link>
-          <a href="#rooms" className="hover:text-gold-400 transition">Rooms</a>
           {user && (
-            <Link to="/my-bookings" className="hover:text-gold-400 transition italic">My Bookings</Link>
+            <>
+              <Link to="/my-bookings" className="hover:text-gold-400 transition">My Bookings</Link>
+              <Link to="/profile" className="hover:text-gold-400 transition">Profile</Link>
+            </>
           )}
-
 
           {/* Kiểm tra điều kiện hiển thị nút */}
           {/* Kiểm tra điều kiện hiển thị nút */}
@@ -83,7 +84,7 @@ const Navbar = () => {
                 {isAdmin && (
                   <Link
                     to="/admin/dashboard"
-                    className="border border-blue-400/40 text-blue-400 px-4 py-1.5 hover:bg-blue-400 hover:text-white transition-all duration-300 text-[10px] font-bold tracking-[0.1em]"
+                    className="hover:text-gold-400 transition"
                   >
                     ADMIN PANEL
                   </Link>

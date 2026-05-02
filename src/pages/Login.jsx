@@ -12,7 +12,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const { login, googleLogin } = useAuth();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,13 +22,13 @@ const Login = () => {
     try {
       const res = await login({ email, password });
 
-      const user = res.user; 
+      const user = res.user;
 
-      
+
       if (user.role === 'admin') {
         navigate('/admin/dashboard');
       } else {
-        navigate('/home'); 
+        navigate('/home');
       }
 
     } catch (err) {
@@ -45,7 +45,7 @@ const Login = () => {
       if (res.user.role === 'admin') {
         navigate('/admin/dashboard');
       } else {
-        navigate('/home'); 
+        navigate('/home');
       }
     } catch (err) {
       setError('Google login failed');
@@ -54,9 +54,6 @@ const Login = () => {
     }
   };
 
-  if (loading) {
-    return <Loading />;
-  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
@@ -117,6 +114,9 @@ const Login = () => {
 
           <div className="text-center text-sm text-slate-500 mt-4">
             Chưa có tài khoản? <a href="/register" className="text-blue-600 hover:underline">Đăng ký</a>
+          </div>
+          <div className="text-center text-sm text-slate-500 mt-4">
+            Quên mật khẩu? <a href="/forgot-password" className="text-blue-600 hover:underline">Quên mật khẩu</a>
           </div>
         </form>
       </div>

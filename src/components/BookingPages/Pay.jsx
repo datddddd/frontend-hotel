@@ -69,11 +69,20 @@ const PaymentModal = ({
                         <p className="text-3xl font-black text-slate-900">{paymentAmount.toLocaleString()}₫</p>
                     </div>
 
+                    <div className="flex justify-center py-4">
+                        <img 
+                            src={`https://img.vietqr.io/image/MB-0987654321-compact.png?amount=${paymentAmount}&addInfo=Thanh toan phong ${selectedRoom?.room_number || form.full_name}&accountName=KHACH SAN TIVI`} 
+                            alt="Mã QR Thanh toán" 
+                            className="w-48 h-48 rounded-xl shadow-md border border-slate-200"
+                        />
+                        <p className="text-xs text-slate-500 mt-2 text-center absolute -bottom-6">Quét mã QR để thanh toán nhanh</p>
+                    </div>
+
                     <button
-                        onClick={() => onConfirm("cash")}
-                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2"
+                        onClick={() => onConfirm("transfer")}
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 mt-6"
                     >
-                        Xác nhận & Đặt ngay
+                        Xác nhận đã chuyển khoản
                     </button>
 
                     <button
