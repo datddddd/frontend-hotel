@@ -4,13 +4,13 @@ const NotFound = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 flex items-center justify-center px-4">
       <div className="w-full max-w-md text-center">
-        {/* Minh họa số 404 lớn phía sau hoặc Icon */}
+
         <div className="relative mb-8">
           <h2 className="text-[120px] font-black text-slate-200 select-none leading-none">
             404
           </h2>
           <div className="absolute inset-0 flex items-center justify-center">
-            {/* Bạn có thể thay bằng một Lucide Icon như <FileQuestion /> */}
+
             <span className="text-5xl">🔍</span>
           </div>
         </div>

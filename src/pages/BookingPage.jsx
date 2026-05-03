@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "../services/api";
-import { jwtDecode } from "jwt-decode";
+import { useAuth } from "../hooks/useAuth";
 import {
   Calendar, User, CreditCard, Phone, Mail,
   CheckCircle2, MapPin, Star, Info, X, ShieldCheck, Users
@@ -35,6 +35,8 @@ const BookingPage = () => {
   // State mới cho Modal chi tiết
   const [viewingRoomDetail, setViewingRoomDetail] = useState(null);
 
+  const { user } = useAuth();
+
   useEffect(() => {
     const fetchRoomTypes = async () => {
       try {
@@ -45,21 +47,16 @@ const BookingPage = () => {
       }
     };
 
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        setForm(prev => ({
-          ...prev,
-          full_name: decoded.user_name || "",
-          email: decoded.email || ""
-        }));
-      } catch (err) {
-        console.error("Token không hợp lệ");
-      }
+    // Điền thông tin từ user đang đăng nhập (lưu trong localStorage qua useAuth)
+    if (user) {
+      setForm(prev => ({
+        ...prev,
+        full_name: user.user_name || "",
+        email: user.email || "",
+      }));
     }
     fetchRoomTypes();
-  }, []);
+  }, [user]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });

@@ -118,7 +118,7 @@ const MyBookings = () => {
                 {/* IMAGE SECTION */}
                 <div className="relative h-48 overflow-hidden">
                   <img
-                    src={'https://th.bing.com/th/id/OIP.ho7QLJRBtJlqKjTfWhMblwHaE8?w=286&h=191&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3'}
+                    src={booking.room_type?.image1 || booking.room?.room_type?.image1 || booking.image1}
                     alt={`Phòng ${booking.room_number}`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
@@ -147,7 +147,7 @@ const MyBookings = () => {
                   <div className="flex justify-between items-center text-sm border-b border-gray-50 pb-2">
                     <span className="text-gray-500">Thanh toán:</span>
                     <span className={`font-bold ${booking.payment_status === 'PAID' ? 'text-green-600' :
-                        booking.payment_status === 'PARTIAL_PAID' ? 'text-amber-500' : 'text-red-500'
+                      booking.payment_status === 'PARTIAL_PAID' ? 'text-amber-500' : 'text-red-500'
                       }`}>
                       {booking.payment_status === 'PAID' ? '✓ Đã xong' :
                         booking.payment_status === 'PARTIAL_PAID' ? 'Một phần' : 'Chưa thanh toán'}
