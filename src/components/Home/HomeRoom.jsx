@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import api from "../../services/api";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 
 const ROOM_TYPES_ENDPOINT = "/room-types";
 const PLACEHOLDER = "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80";
@@ -14,9 +15,19 @@ function getRoomImages(row) {
 /* ---- Card hiển thị từng loại phòng (Đã nâng cấp) ---- */
 function RoomCard({ room }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const images = getRoomImages(room);
   const [imgIdx, setImgIdx] = useState(0);
   const hasMultiple = images.length > 1;
+
+  const handleBookingClick = () => {
+    if (!user) {
+      navigate("/login");
+    } else {
+      navigate("/booking");
+    }
+  };
+
   return (
     <div className="group bg-white border border-slate-100 overflow-hidden hover:shadow-2xl transition-all duration-500 flex flex-col h-full">
       {/* Khối Ảnh */}
@@ -80,7 +91,7 @@ function RoomCard({ room }) {
           </div>
 
           <button
-            onClick={() => navigate("/booking")}
+            onClick={handleBookingClick}
             className="relative overflow-hidden px-6 py-2.5 bg-slate-900 text-white text-xs font-bold uppercase tracking-widest transition-all duration-300 hover:bg-emerald-700 active:scale-95"
           >
             Book Now

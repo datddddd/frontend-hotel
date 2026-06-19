@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import api from "../services/api";
 import { useAuth } from "../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import {
   Calendar, User, CreditCard, Phone, Mail,
   CheckCircle2, MapPin, Star, Info, X, ShieldCheck, Users
@@ -36,8 +36,14 @@ const BookingPage = () => {
   const [viewingRoomDetail, setViewingRoomDetail] = useState(null);
 
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
     const fetchRoomTypes = async () => {
       try {
         const res = await roomService.getRoomTypes();
@@ -47,16 +53,14 @@ const BookingPage = () => {
       }
     };
 
-    // Điền thông tin từ user đang đăng nhập (lưu trong localStorage qua useAuth)
-    if (user) {
-      setForm(prev => ({
-        ...prev,
-        full_name: user.user_name || "",
-        email: user.email || "",
-      }));
-    }
+    // Điền thông tin từ user đang đăng nhập
+    setForm(prev => ({
+      ...prev,
+      full_name: user.user_name || "",
+      email: user.email || "",
+    }));
     fetchRoomTypes();
-  }, [user]);
+  }, [user, navigate]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -192,8 +196,13 @@ const BookingPage = () => {
                         </div>
                       </div>
                       <p className="text-indigo-600 font-bold text-right">
-                        {type.price_per_night?.toLocaleString()}₫
-                        <span className="block text-[10px] text-slate-400 font-normal">/ đêm</span>
+                        {new Intl.NumberFormat("vi-VN", {
+                          maximumFractionDigits: 0,
+                        }).format(type.price_per_night)}₫
+
+                        <span className="block text-[10px] text-slate-400 font-normal">
+                          / đêm
+                        </span>
                       </p>
                     </div>
                     {selectedType === type.id && (

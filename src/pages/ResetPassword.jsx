@@ -13,45 +13,32 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Kiểm tra khớp mật khẩu
-    if (password !== confirmPassword) {
-      alert("Mật khẩu xác nhận không khớp!");
-      return;
-    }
-
     setLoading(true);
     try {
+      // 1. Kiểm tra độ dài mật khẩu
+      if (password.length < 6) {
+        alert("Mật khẩu phải có ít nhất 6 ký tự!");
+        return;
+      }
+
+      // 2. Kiểm tra khớp mật khẩu
+      if (password !== confirmPassword) {
+        alert("Mật khẩu xác nhận không khớp!");
+        return;
+      }
+
       const response = await api.post("/reset-password", {
         token,
         newPassword: password,
       });
 
       alert(response.data.message || "Đổi mật khẩu thành công!");
-      navigate("/login"); // Chuyển hướng sau khi thành công
+      navigate("/login");
     } catch (error) {
       alert(error.response?.data?.error || "Có lỗi xảy ra, vui lòng thử lại sau.");
     } finally {
       setLoading(false);
     }
-    const handleSubmit = async (e) => {
-      e.preventDefault();
-
-      // 1. Kiểm tra độ dài
-      if (password.length < 6) {
-        alert("Mật khẩu phải có ít nhất 6 ký tự!");
-        return; // Dừng hàm, không gọi API
-      }
-
-      // 2. Kiểm tra khớp mật khẩu (cho trang ResetPassword)
-      if (password !== confirmPassword) {
-        alert("Mật khẩu xác nhận không khớp!");
-        return;
-      }
-
-      setLoading(true);
-      // ... gọi API như bình thường
-    };
   };
 
 

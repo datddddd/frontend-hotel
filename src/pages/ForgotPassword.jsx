@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { userService } from "../services/userService";
 
 const ForgotPassword = () => {
     const [email, setEmail] = useState("");
@@ -12,7 +13,7 @@ const ForgotPassword = () => {
         setLoading(true);
 
         try {
-            const response = await api.post("/forgot-password", { email });
+            const response = await userService.forgotPassword(email);
             alert(response.data.message || "Đã gửi email khôi phục! Vui lòng kiểm tra hộp thư của bạn.");
         } catch (error) {
             alert(error.response?.data?.error || "Có lỗi xảy ra, vui lòng thử lại sau.");
@@ -24,7 +25,7 @@ const ForgotPassword = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
             <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
-                {/* Icon minh họa hoặc Logo */}
+
                 <div className="flex justify-center mb-6">
                     <div className="p-3 bg-blue-100 rounded-full">
                         <svg
@@ -33,7 +34,7 @@ const ForgotPassword = () => {
                             stroke="currentColor"
                             viewBox="0 0 24 24"
                         >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="輪-12h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2v-8a2 2 0 012-2z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 118 0v4" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v3m0 0v3m0-3h3m-3 0H9" />
                         </svg>
@@ -66,8 +67,8 @@ const ForgotPassword = () => {
                         type="submit"
                         disabled={loading}
                         className={`w-full py-3 rounded-xl font-bold text-white shadow-lg transition-all ${loading
-                                ? "bg-blue-300 cursor-not-allowed"
-                                : "bg-blue-600 hover:bg-blue-700 hover:shadow-blue-200 active:scale-95"
+                            ? "bg-blue-300 cursor-not-allowed"
+                            : "bg-blue-600 hover:bg-blue-700 hover:shadow-blue-200 active:scale-95"
                             }`}
                     >
                         {loading ? (

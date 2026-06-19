@@ -9,10 +9,12 @@ import MyBookings from "../pages/MyBookings";
 import ForgotPassword from "../pages/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword";
 import Profile from "../pages/Profile";
+import About from "../pages/About";
 
 const publicRoutes = [
   { path: "/", element: <Home /> },
   { path: "/home", element: <Home /> },
+  { path: "/about", element: <About /> },
   { path: "/login", element: <Login /> },
   { path: "/booking", element: <BookingPage /> },
   { path: "/register", element: <Register /> },

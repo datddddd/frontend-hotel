@@ -1,18 +1,29 @@
 import { useEffect, useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Home/HomeNavabar";
 import Footer from "../components/Home/HomeFooter";
-import api from "../services/api";
+import { roomService } from "../services/roomService";
 import Loading from "./Loading";
+import { useAuth } from "../hooks/useAuth";
 
 const PLACEHOLDER =
   "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&q=80";
 
 /* ---- Card kết quả tìm kiếm ---- */
 function SearchRoomCard({ room }) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const images = room.images && room.images.length > 0 ? room.images : [PLACEHOLDER];
   const [imgIdx, setImgIdx] = useState(0);
   const hasMultiple = images.length > 1;
+
+  const handleBookingClick = () => {
+    if (!user) {
+      navigate("/login");
+    } else {
+      navigate("/booking");
+    }
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden group hover:shadow-2xl transition-shadow duration-300">
@@ -85,7 +96,7 @@ function SearchRoomCard({ room }) {
         <div className="flex items-center justify-between">
           {room.price_per_night != null && (
             <p className="text-lg font-bold text-emerald-600">
-              {Number(room.price_per_night).toLocaleString("vi-VN")}đ
+              {Number(room.price_per_night).toLocaleString("vi-VN")}₫
               <span className="text-sm font-normal text-gray-400"> / đêm</span>
             </p>
           )}
@@ -99,12 +110,12 @@ function SearchRoomCard({ room }) {
 
         {/* Nút đặt phòng */}
         {room.available_rooms > 0 && (
-          <Link
-            to="/booking"
-            className="mt-4 block text-center bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold py-2.5 rounded-xl uppercase tracking-wider text-sm transition-all duration-300 shadow-md hover:shadow-amber-500/30"
+          <button
+            onClick={handleBookingClick}
+            className="w-full mt-4 block text-center bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold py-2.5 rounded-xl uppercase tracking-wider text-sm transition-all duration-300 shadow-md hover:shadow-amber-500/30"
           >
             Đặt phòng ngay
-          </Link>
+          </button>
         )}
       </div>
     </div>
@@ -131,9 +142,7 @@ const SearchResults = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await api.get("/room-types/search", {
-          params: { keyword },
-        });
+        const res = await roomService.getRoomTypesSearch(keyword);
         if (!cancelled) {
           setResults(Array.isArray(res.data) ? res.data : []);
         }

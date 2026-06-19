@@ -12,7 +12,7 @@ import {
   User,
   Phone,
   Mail,
-  CalendarCheck 
+  CalendarCheck
 } from "lucide-react";
 
 const Customers = () => {

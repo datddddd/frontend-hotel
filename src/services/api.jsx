@@ -22,8 +22,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      const publicPaths = ['/login', '/register', '/forgot-password'];
+      const isPublicPath = publicPaths.some(path => window.location.pathname.startsWith(path));
+
+      if (!isPublicPath) {
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

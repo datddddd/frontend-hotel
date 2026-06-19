@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import api from "../services/api";
 import Navbar from "../components/Home/HomeNavabar";
 import Footer from "../components/Home/HomeFooter";
+import { userService } from "../services/userService";
 import {
   User, Lock, ShieldCheck,
   Loader2, CheckCircle2, AlertCircle,
@@ -11,6 +13,7 @@ import {
 
 const Profile = () => {
   const { user, updateUserData } = useAuth();
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     user_name: "",
@@ -33,7 +36,7 @@ const Profile = () => {
 
   useEffect(() => {
     if (user?.id) {
-      api.get(`/users/${user.id}`)
+      userService.getProfile()
         .then((res) => {
           setFormData({
             user_name: res.data.user_name || "",
@@ -77,7 +80,7 @@ const Profile = () => {
     setError("");
 
     try {
-      await api.put(`/users/${user.id}`, formData);
+      await userService.updateProfile(formData);
       updateUserData({ user_name: formData.user_name, email: formData.email });
       setMessage("Cập nhật thông tin thành công!");
       setTimeout(() => setMessage(""), 3000);
@@ -105,7 +108,7 @@ const Profile = () => {
 
     setLoadingPassword(true);
     try {
-      await api.put(`/users/${user.id}/reset-password`, { newPassword: passwordData.newPassword });
+      await userService.updatePassword(user.id, passwordData.newPassword);
       setPwdMessage("Đổi mật khẩu thành công!");
       setPasswordData({ newPassword: "", confirmPassword: "" });
       setTimeout(() => setPwdMessage(""), 3000);
@@ -116,14 +119,13 @@ const Profile = () => {
     }
   };
 
-  if (!user) {
-    return (
-      <div className="flex flex-col justify-center items-center h-screen bg-white">
-        <Loader2 className="animate-spin text-blue-600 mb-2" size={48} />
-        <p className="text-gray-500 font-medium animate-pulse">Đang tải hồ sơ...</p>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!user) {
+      navigate('/login', { replace: true });
+    }
+  }, [user, navigate]);
+
+  if (!user) return null;
 
   const strength = getPasswordStrength(passwordData.newPassword);
   const strengthColors = ["bg-gray-200", "bg-red-400", "bg-orange-400", "bg-yellow-400", "bg-green-500"];

@@ -1,7 +1,43 @@
 import { useState } from "react";
-import api from "../services/api";
-import { useNavigate } from "react-router-dom";
-import Loading from "./Loading";
+import { useNavigate, Link } from "react-router-dom";
+import { authService } from "../services/userService";
+import {
+    User,
+    Mail,
+    Lock,
+    CheckCircle,
+    AlertCircle,
+    Loader2
+} from "lucide-react";
+
+// Component InputField tách riêng ra ngoài
+const InputField = ({ icon: Icon, ...props }) => (
+    <div className="relative mb-4">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+            <Icon size={18} />
+        </div>
+
+        <input
+            {...props}
+            className="
+                w-full
+                pl-10
+                pr-4
+                py-3
+                border
+                border-gray-200
+                rounded-xl
+                bg-gray-50
+                focus:bg-white
+                focus:ring-2
+                focus:ring-indigo-500
+                focus:border-transparent
+                outline-none
+                transition-all
+            "
+        />
+    </div>
+);
 
 const Register = () => {
     const navigate = useNavigate();
@@ -9,99 +45,206 @@ const Register = () => {
     const [form, setForm] = useState({
         user_name: "",
         email: "",
-        password: ""
+        password: "",
+        confirmPassword: ""
     });
 
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
+    // Handle input change
     const handleChange = (e) => {
-        setForm({
-            ...form,
+        setForm((prev) => ({
+            ...prev,
             [e.target.name]: e.target.value
-        });
+        }));
     };
 
+    // Handle submit
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         setMessage("");
         setError("");
-        setLoading(true);
+
+        // Validate
+        if (
+            !form.user_name ||
+            !form.email ||
+            !form.password ||
+            !form.confirmPassword
+        ) {
+            setError("Vui lòng nhập đầy đủ thông tin");
+            return;
+        }
+
+        if (form.password !== form.confirmPassword) {
+            setError("Mật khẩu không khớp");
+            return;
+        }
 
         try {
-            const res = await api.post("/register", form);
+            setLoading(true);
 
-            setMessage(res.data.message);
+            const res = await authService.register({
+                user_name: form.user_name,
+                email: form.email,
+                password: form.password
+            });
 
+            setMessage(
+                res?.data?.message ||
+                "Đăng ký thành công! Đang chuyển hướng..."
+            );
+
+            // Reset form
+            setForm({
+                user_name: "",
+                email: "",
+                password: "",
+                confirmPassword: ""
+            });
+
+            // Redirect
             setTimeout(() => {
                 navigate("/login");
-            }, 1000);
+            }, 2000);
 
         } catch (err) {
-            if (err.response?.data?.error) {
-                setError(err.response.data.error);
-            } else {
-                setError("Có lỗi xảy ra");
-            }
+            setError(
+                err.response?.data?.error ||
+                err.response?.data?.message ||
+                "Có lỗi xảy ra"
+            );
         } finally {
             setLoading(false);
         }
     };
 
-    if (loading) {
-        return <Loading />;
-    }
-
-  
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gray-100">
-            <form
-                onSubmit={handleSubmit}
-                className="bg-white p-8 rounded-2xl shadow-lg w-96"
-            >
-                <h2 className="text-2xl font-bold mb-6 text-center">Đăng ký</h2>
+        <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 p-4">
+            <div className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md">
 
-                <input
-                    type="text"
-                    name="user_name"   
-                    placeholder="Tên người dùng"
-                    value={form.user_name}
-                    onChange={handleChange}
-                    className="w-full mb-4 p-2 border rounded"
-                    required
-                />
+                {/* Header */}
+                <div className="text-center mb-8">
+                    <h2 className="text-3xl font-extrabold text-gray-800">
+                        Tạo tài khoản
+                    </h2>
 
-                <input
-                    type="email"
-                    name="email"
-                    placeholder="Email"
-                    value={form.email}
-                    onChange={handleChange}
-                    className="w-full mb-4 p-2 border rounded"
-                    required
-                />
+                    <p className="text-gray-500 mt-2">
+                        Tham gia cùng chúng tôi ngay hôm nay
+                    </p>
+                </div>
 
-                <input
-                    type="password"
-                    name="password"
-                    placeholder="Mật khẩu"
-                    value={form.password}
-                    onChange={handleChange}
-                    className="w-full mb-4 p-2 border rounded"
-                    required
-                />
+                {/* Form */}
+                <form onSubmit={handleSubmit}>
 
-                <button
-                    type="submit"
-                    className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-                >
-                    Đăng ký
-                </button>
+                    <InputField
+                        icon={User}
+                        type="text"
+                        name="user_name"
+                        placeholder="Tên người dùng"
+                        value={form.user_name}
+                        onChange={handleChange}
+                    />
 
-                {message && <p className="text-green-500 mt-4">{message}</p>}
-                {error && <p className="text-red-500 mt-4">{error}</p>}
-            </form>
+                    <InputField
+                        icon={Mail}
+                        type="email"
+                        name="email"
+                        placeholder="Email"
+                        value={form.email}
+                        onChange={handleChange}
+                    />
+
+                    <InputField
+                        icon={Lock}
+                        type="password"
+                        name="password"
+                        placeholder="Mật khẩu"
+                        value={form.password}
+                        onChange={handleChange}
+                    />
+
+                    <InputField
+                        icon={Lock}
+                        type="password"
+                        name="confirmPassword"
+                        placeholder="Xác nhận mật khẩu"
+                        value={form.confirmPassword}
+                        onChange={handleChange}
+                    />
+
+                    {/* Button */}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="
+                            w-full
+                            bg-indigo-600
+                            hover:bg-indigo-700
+                            text-white
+                            font-semibold
+                            py-3
+                            rounded-xl
+                            shadow-lg
+                            shadow-indigo-200
+                            transition-all
+                            active:scale-95
+                            disabled:opacity-70
+                            disabled:cursor-not-allowed
+                            flex
+                            justify-center
+                            items-center
+                            gap-2
+                        "
+                    >
+                        {loading ? (
+                            <>
+                                <Loader2
+                                    className="animate-spin"
+                                    size={20}
+                                />
+                                Đang xử lý...
+                            </>
+                        ) : (
+                            "Đăng ký"
+                        )}
+                    </button>
+                </form>
+
+                {/* Error */}
+                {error && (
+                    <div className="mt-4 flex items-center gap-2 bg-red-50 text-red-600 p-3 rounded-lg border border-red-100">
+                        <AlertCircle size={18} />
+                        <span className="text-sm font-medium">
+                            {error}
+                        </span>
+                    </div>
+                )}
+
+                {/* Success */}
+                {message && (
+                    <div className="mt-4 flex items-center gap-2 bg-green-50 text-green-600 p-3 rounded-lg border border-green-100">
+                        <CheckCircle size={18} />
+                        <span className="text-sm font-medium">
+                            {message}
+                        </span>
+                    </div>
+                )}
+
+                {/* Footer */}
+                <p className="text-center mt-8 text-gray-600 text-sm">
+                    Đã có tài khoản?{" "}
+                    <Link
+                        to="/login"
+                        className="text-indigo-600 font-bold hover:underline"
+                    >
+                        Đăng nhập ngay
+                    </Link>
+                </p>
+            </div>
         </div>
     );
 };

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Home/HomeNavabar';
 import { useAuth } from '../hooks/useAuth';
@@ -17,7 +16,7 @@ const MyBookings = () => {
   const fetchBookings = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await bookingService.getBookings();
+      const response = await bookingService.getMyBookings();
       setBookings(response?.data?.data || []);
       setError(null);
     } catch (err) {
@@ -75,6 +74,8 @@ const MyBookings = () => {
       </span>
     );
   };
+
+  if (!user) return null;
 
   if (loading) {
     return (
@@ -174,7 +175,7 @@ const MyBookings = () => {
                       </button>
                     )}
 
-                    {booking.status === 'booked' && (
+                    {booking.status?.toLowerCase() === 'booked' && (
                       <button
                         onClick={() => handleCancel(booking.id)}
                         className="flex-1 border border-gray-200 hover:border-red-500 hover:bg-red-50 text-gray-500 hover:text-red-600 py-3 rounded-xl text-sm font-semibold transition"

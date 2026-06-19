@@ -16,6 +16,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     if (!email || !password) return setError('All fields are required');
 
     setLoading(true);
@@ -48,7 +49,7 @@ const Login = () => {
         navigate('/home');
       }
     } catch (err) {
-      setError('Google login failed');
+      setError(err.response?.data?.error || err.message || 'Google login failed');
     } finally {
       setLoading(false);
     }

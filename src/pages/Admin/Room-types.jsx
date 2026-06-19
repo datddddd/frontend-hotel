@@ -149,7 +149,9 @@ const RoomTypes = () => {
                                     </td>
                                     <td className="px-6 py-4 font-medium text-gray-900">{r.room_name}</td>
                                     <td className="px-6 py-4 text-emerald-600 font-semibold">
-                                        {Number(r.price_per_night).toLocaleString()}đ
+                                        {Number(r.price_per_night).toLocaleString("vi-VN", {
+                                            maximumFractionDigits: 0,
+                                        })}đ
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className="flex items-center gap-1.5 bg-gray-100 w-fit px-2.5 py-1 rounded-full text-xs font-medium">

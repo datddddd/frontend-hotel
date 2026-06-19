@@ -63,9 +63,9 @@ const AdminLayout = () => {
           </button>
           <div className="flex items-center gap-4">
             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-              {(user?.name || user?.email || 'A').charAt(0).toUpperCase()}
+              {(user?.user_name || user?.email || 'A').charAt(0).toUpperCase()}
             </div>
-            <span className="font-medium text-slate-700">{user?.name || user?.email || 'Admin'}</span>
+            <span className="font-medium text-slate-700">{user?.user_name || user?.email || 'Admin'}</span>
           </div>
         </header>
 

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import api from "../../services/api";
 import { useNavigate } from "react-router-dom";
 import {
   BedDouble,
@@ -65,8 +65,8 @@ const Dashboard = () => {
     const fetchReport = async () => {
       setLoading(true);
       try {
-        const res = await axios.get(
-          "http://localhost:5000/api/bookings/dashboard/report",
+        const res = await api.get(
+          "/bookings/dashboard/report",
           { params: { days: rangeDays } }
         );
         setReport(res.data);
